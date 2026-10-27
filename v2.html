@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="origin">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src https://cdn.jsdelivr.net https://fonts.gstatic.com; connect-src https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>어라운드 예약 콘솔</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* ═══════════ 등대 데스크 — 토큰 ═══════════ */
+:root{
+  --canvas:#E8EEF0; --bg:#E8EEF0; --surface:#FFFFFF; --surface2:#F2F6F7;
+  --ink:#0F2430; --ink2:#4F626D; --ink3:#667780; --line:#D6DFE3;
+  --sea:#1D6B80; --sea-d:#154F5F; --sea-t:#DCEBF0; --on-sea:#FFFFFF;
+  --amber:#F2A33A; --amber-t:#FCEFD8; --amber-ink:#7C4A05;
+  --glass:#3E9A82; --glass-t:#DDF1EA; --glass-ink:#1E6A57;
+  --rust:#C2453B; --rust-t:#F9E4E1; --rust-ink:#A3342B; --on-rust:#FFFFFF;
+  --wash:rgba(255,255,255,.92); --wash2:rgba(29,107,128,.10);
+  --sh-s:0 1px 2px rgba(15,36,48,.05),0 10px 28px -14px rgba(15,36,48,.20);
+  --sh-m:0 2px 4px rgba(15,36,48,.06),0 20px 44px -16px rgba(15,36,48,.30);
+  --shadow:var(--sh-s); --r:20px;
+  --disp:"Bricolage Grotesque","Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --body:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --canvas:#0B1B24; --bg:#0B1B24; --surface:#132A35; --surface2:#193543;
+  --ink:#E8F0F3; --ink2:#A2B5BF; --ink3:#8BA2AE; --line:#25424F;
+  --sea:#6FBBD0; --sea-d:#A6D9E7; --sea-t:#173845; --on-sea:#06202A;
+  --amber:#F5B14F; --amber-t:#3B2E17; --amber-ink:#F7CC8A;
+  --glass:#5FC0A3; --glass-t:#173A31; --glass-ink:#8FDBC3;
+  --rust:#EF8A80; --rust-t:#3F2220; --rust-ink:#F4A9A1; --on-rust:#2A0F0D;
+  --wash:rgba(70,130,155,.20); --wash2:rgba(111,187,208,.10);
+  --sh-s:0 1px 2px rgba(0,0,0,.30),0 10px 28px -14px rgba(0,0,0,.55);
+  --sh-m:0 2px 4px rgba(0,0,0,.35),0 20px 44px -16px rgba(0,0,0,.65);
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--ink);font:400 15px/1.5 var(--body);letter-spacing:-.01em;-webkit-font-smoothing:antialiased;min-height:100dvh;word-break:keep-all;overflow-wrap:break-word}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(900px 540px at 10% -10%,var(--wash),transparent 70%),radial-gradient(760px 520px at 105% 0,var(--wash2),transparent 70%)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--sea);outline-offset:3px;border-radius:10px}
+.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;letter-spacing:0}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.grow{flex:1;min-width:160px}
+
+/* ═══════════ 뼈대: 모바일 우선 ═══════════ */
+.shell{display:flex;flex-direction:column;min-height:100dvh;width:100%;max-width:760px;margin:0 auto}
+.rail{display:contents}
+.head{position:sticky;top:0;z-index:20;order:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background:color-mix(in srgb,var(--canvas) 80%,transparent);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3)}
+#hero{order:2;padding:4px 16px 0}
+.main{order:3;padding:12px 16px 132px;min-width:0}
+
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand b{font:600 15px/1 var(--disp);letter-spacing:.32em;margin-right:-.32em}
+.brand span{display:none;color:var(--ink2);font-size:13px}
+.glyph{position:relative;display:inline-block;width:22px;height:22px;border-radius:50%;flex:none;
+  background:radial-gradient(circle,var(--amber) 0 3.2px,transparent 3.6px),repeating-radial-gradient(circle,transparent 0 3px,color-mix(in srgb,var(--ink) 38%,transparent) 3px 3.8px);
+  box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 60%,transparent) inset}
+
+.bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 13px;border-radius:999px;border:0;background:var(--surface);box-shadow:var(--sh-s);font-size:13px;font-weight:500;white-space:nowrap;max-width:60vw;overflow:hidden;text-overflow:ellipsis}
+.chip svg{width:17px;height:17px;flex:none}
+.chip .lbl{display:none}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--glass);flex:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--glass) 22%,transparent)}
+.chip.bad{background:var(--rust-t);color:var(--rust-ink)} .chip.bad .dot{background:var(--rust);box-shadow:0 0 0 3px color-mix(in srgb,var(--rust) 24%,transparent)}
+.chip.warn{background:var(--amber-t);color:var(--amber-ink)} .chip.warn .dot{background:var(--amber)}
+
+/* ═══════════ 시그니처: 렌즈 ═══════════ */
+.hero{--tone:var(--glass);display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 18px;align-items:center;padding:8px 0}
+.hero.need{--tone:var(--amber)} .hero.bad{--tone:var(--rust)} .hero.quiet{--tone:var(--sea)} .hero.wait{--tone:var(--ink3)}
+.lens{position:relative;width:104px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:radial-gradient(circle at 50% 34%,var(--surface) 0,color-mix(in srgb,var(--tone) 9%,var(--surface)) 55%,color-mix(in srgb,var(--tone) 24%,var(--surface)) 100%);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--tone) 34%,transparent),0 16px 34px -16px color-mix(in srgb,var(--tone) 70%,transparent),inset 0 1px 0 rgba(255,255,255,.55)}
+.lens::before{content:"";position:absolute;inset:6px;border-radius:50%;pointer-events:none;
+  background:repeating-radial-gradient(circle,transparent 0 5px,color-mix(in srgb,var(--tone) 30%,transparent) 5px 5.8px);
+  -webkit-mask:radial-gradient(circle closest-side,transparent 58%,#000 60%);mask:radial-gradient(circle closest-side,transparent 58%,#000 60%)}
+.lens::after{content:"";position:absolute;inset:-14px;border-radius:50%;pointer-events:none;opacity:0;
+  background:conic-gradient(from 0deg,transparent 0 76%,color-mix(in srgb,var(--amber) 50%,transparent) 92%,var(--amber) 99%,transparent 100%);
+  -webkit-mask:radial-gradient(circle closest-side,transparent 78%,#000 80%,#000 93%,transparent 100%);mask:radial-gradient(circle closest-side,transparent 78%,#000 80%,#000 93%,transparent 100%)}
+.num-w{position:relative;z-index:1;display:grid;justify-items:center;gap:2px}
+.hero .n{font:300 46px/.9 var(--disp);font-variant-numeric:tabular-nums;letter-spacing:-.045em;font-optical-sizing:auto}
+.hero .n.long{font-size:30px}
+.num-w small{font-size:10.5px;font-weight:600;letter-spacing:.14em;color:var(--ink2);margin-right:-.14em}
+.hero.bad .n{color:var(--rust)} .hero.wait .n{color:var(--ink3)}
+.hero.need .lens,.hero.bad .lens{animation:breathe 3.8s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--tone) 34%,transparent),0 16px 34px -16px color-mix(in srgb,var(--tone) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.55)}
+  50%{box-shadow:0 0 0 1px color-mix(in srgb,var(--tone) 50%,transparent),0 18px 44px -10px color-mix(in srgb,var(--tone) 95%,transparent),inset 0 1px 0 rgba(255,255,255,.55)}}
+body.ping .lens::after{animation:beam 2.1s cubic-bezier(.4,0,.2,1) 1}
+@keyframes beam{0%{transform:rotate(-110deg);opacity:0}10%{opacity:1}82%{opacity:1}100%{transform:rotate(250deg);opacity:0}}
+.hero .tx{min-width:0}
+.hero b{display:block;font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.35}
+.hero p{margin:3px 0 0;color:var(--ink2);font-size:13.5px;line-height:1.45}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pill{display:inline-flex;align-items:center;min-height:26px;padding:0 11px;border-radius:999px;background:var(--surface);box-shadow:var(--sh-s);color:var(--ink2);font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.pill.warn{background:var(--amber-t);color:var(--amber-ink);box-shadow:none} .pill.bad{background:var(--rust-t);color:var(--rust-ink);box-shadow:none}
+
+/* 상단 가장자리 빛(새 알림) */
+.sweep{position:fixed;left:0;right:0;top:0;height:3px;overflow:hidden;pointer-events:none;z-index:60}
+.sweep::before{content:"";position:absolute;top:0;bottom:0;left:0;width:34%;background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:0;transform:translateX(-100%)}
+.sweep.go::before{animation:sweep 1.9s cubic-bezier(.35,0,.2,1) 1}
+@keyframes sweep{0%{opacity:0;transform:translateX(-100%)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateX(300%)}}
+
+/* ═══════════ 탭: 모바일은 하단 바 ═══════════ */
+.tabs{position:fixed;z-index:25;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(480px,calc(100% - 24px));
+  display:flex;gap:2px;padding:6px;border-radius:26px;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);box-shadow:var(--sh-m)}
+.tabs button{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;border:0;border-radius:20px;background:transparent;color:var(--ink2);font-size:11.5px;font-weight:600}
+.tabs button svg{width:22px;height:22px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--surface)}
+.tabs .badge{position:absolute;top:5px;right:calc(50% - 26px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--rust);color:var(--on-rust);font-size:11px;display:inline-grid;place-items:center}
+
+/* ═══════════ 데스크톱: 좌측 레일 ═══════════ */
+@media (min-width:920px){
+  .shell{display:grid;grid-template-columns:316px minmax(0,1fr);column-gap:8px;max-width:1300px}
+  .rail{display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100dvh;padding:34px 20px 28px 34px;overflow-y:auto;scrollbar-width:none}
+  .head{display:contents}
+  .brand{order:0;margin:0} .brand span{display:inline} .brand b{font-size:16px}
+  #hero{order:1;padding:0}
+  .tabs{order:2;position:static;transform:none;width:auto;display:grid;gap:2px;padding:0;background:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:0}
+  .tabs button{flex-direction:row;justify-content:flex-start;gap:12px;min-height:46px;padding:0 14px;border-radius:14px;font-size:15px}
+  .tabs button[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:var(--sh-s)}
+  .tabs button:not([aria-selected=true]):hover{background:color-mix(in srgb,var(--surface) 55%,transparent)}
+  .tabs .badge{position:static;margin-left:auto}
+  .bar{order:3;margin-top:auto;position:relative;display:grid;gap:8px;justify-content:stretch}
+  .chip{max-width:none;width:100%;min-height:44px;border-radius:14px}
+  .chip .lbl{display:inline}
+  .main{padding:34px 36px 80px 14px}
+  .main>div{max-width:900px}
+
+  .hero{grid-template-columns:1fr;justify-items:center;text-align:center;gap:16px;padding:6px 0 2px}
+  .lens{width:196px}
+  .lens::before{inset:10px;background:repeating-radial-gradient(circle,transparent 0 8px,color-mix(in srgb,var(--tone) 28%,transparent) 8px 9px)}
+  .lens::after{inset:-24px}
+  .hero .n{font-size:92px}.hero .n.long{font-size:58px}
+  .num-w small{font-size:12px}
+  .hero b{font-size:17px} .pills{justify-content:center}
+}
+
+/* ═══════════ 배너 ═══════════ */
+.banner{display:flex;gap:12px;align-items:center;padding:13px 16px;border-radius:16px;margin:0 0 10px;font-size:14px;line-height:1.45;box-shadow:var(--sh-s)}
+.banner svg{width:20px;height:20px;flex:none}
+.banner .grow{flex:1;min-width:0}
+.banner button{min-height:36px;padding:0 14px;border-radius:999px;border:0;background:color-mix(in srgb,currentColor 14%,transparent);color:inherit;font-weight:700}
+.b-bad{background:var(--rust-t);color:var(--rust-ink)} .b-warn{background:var(--amber-t);color:var(--amber-ink)} .b-info{background:var(--sea-t);color:var(--sea-d)}
+
+/* ═══════════ 도구 줄 ═══════════ */
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
+.seg{display:inline-flex;background:color-mix(in srgb,var(--ink) 7%,transparent);border-radius:14px;padding:3px}
+.seg button{min-height:40px;padding:0 16px;border:0;border-radius:11px;background:transparent;font-weight:600;font-size:14px;color:var(--ink2)}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:var(--sh-s)}
+.field{min-height:46px;padding:0 15px;border-radius:14px;border:1px solid transparent;background:var(--surface);box-shadow:var(--sh-s);color:var(--ink)}
+.field::placeholder{color:var(--ink3)}
+.field:focus{outline:2px solid var(--sea);outline-offset:1px}
+select.field{appearance:none;-webkit-appearance:none;padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A9AA3' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px}
+.search{position:relative;flex:1;min-width:180px}
+.search .field{width:100%;padding-left:42px}
+.search .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink3);pointer-events:none}
+.search .ico svg{width:18px;height:18px}
+
+/* ═══════════ 예약 행 ═══════════ */
+.list{display:grid;gap:10px}
+.row{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:12px 20px;padding:14px 16px 14px 18px;background:var(--surface);border-radius:var(--r);box-shadow:var(--sh-s);cursor:pointer;transition:box-shadow .2s ease,transform .2s ease}
+@media (hover:hover){.row:hover{box-shadow:var(--sh-m)}}
+.row.cancel.need{background:color-mix(in srgb,var(--rust-t) 55%,var(--surface))}
+.row .l1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row .l2{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 18px;margin-top:9px;font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.3}
+.row .l3{margin-top:4px;color:var(--ink2);font-size:13.5px}
+.row.done .l2{color:var(--ink2)}
+.sig{width:10px;height:10px;border-radius:50%;flex:none;border:2px solid var(--ink3);background:transparent}
+.row.need .sig{border-color:var(--amber);background:var(--amber);box-shadow:0 0 0 4px color-mix(in srgb,var(--amber) 28%,transparent)}
+.row.need.cancel .sig{border-color:var(--rust);background:var(--rust);box-shadow:0 0 0 4px color-mix(in srgb,var(--rust) 26%,transparent)}
+.row.done .sig{border-color:var(--glass);opacity:.7}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0}
+.t-new{background:var(--sea-t);color:var(--sea-d)} .t-change{box-shadow:inset 0 0 0 1.5px var(--sea);color:var(--sea-d)} .t-cancel{background:var(--rust);color:var(--on-rust)}
+.t-today{background:var(--amber-t);color:var(--amber-ink)} .t-past{background:var(--rust-t);color:var(--rust-ink)}
+.ch{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:12.5px;font-weight:600}
+.row .id{color:var(--ink3)}
+.age{color:var(--ink2);font-size:12.5px;margin-left:auto;font-variant-numeric:tabular-nums}
+.stay{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:600;letter-spacing:-.005em;color:var(--ink2)}
+.stay .nt{display:inline-flex;align-items:center;gap:7px;color:var(--ink2);font-size:12.5px}
+.stay .nt::before,.stay .nt::after{content:"";width:16px;height:2px;border-radius:2px;background:currentColor;opacity:.3}
+
+.chk{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:0 20px 0 8px;border-radius:999px;border:0;background:var(--surface2);text-align:left;box-shadow:inset 0 0 0 1.5px var(--line);transition:background .2s,box-shadow .2s}
+.chk .box{width:38px;height:38px;border-radius:50%;border:2px solid var(--ink3);background:var(--surface);display:grid;place-items:center;flex:none;transition:background .2s,border-color .2s}
+.chk .box svg{width:18px;height:18px;opacity:0;stroke:#fff;transition:opacity .15s}
+.chk small{display:block;color:var(--ink2);font-size:12px;line-height:1.3}
+.chk b{display:block;font-size:14.5px}
+.row.need .chk{background:var(--amber-t);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--amber) 70%,transparent)}
+.row.need .chk .box{border-color:var(--amber)}
+.row.need .chk b{color:var(--amber-ink)} .row.need .chk small{color:var(--amber-ink);opacity:.8}
+.row.need.cancel .chk{background:var(--rust-t);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--rust) 60%,transparent)}
+.row.need.cancel .chk .box{border-color:var(--rust)} .row.need.cancel .chk b,.row.need.cancel .chk small{color:var(--rust-ink)}
+.chk[aria-checked=true]{background:var(--glass-t);box-shadow:none}
+.chk[aria-checked=true] .box{background:var(--glass);border-color:var(--glass)} .chk[aria-checked=true] .box svg{opacity:1}
+.chk[aria-checked=true] b{color:var(--glass-ink)}
+.chk[aria-disabled=true]{cursor:default}
+.chk.busy{opacity:.55;pointer-events:none}
+@media (hover:hover){.chk:not([aria-disabled=true]):hover .box{transform:scale(1.06)}}
+@media (min-width:640px){.row{grid-template-columns:minmax(0,1fr) 212px;align-items:center}.chk{width:212px}}
+
+/* 상세 */
+.detail{grid-column:1/-1;margin-top:2px;padding-top:16px;border-top:1px dashed var(--line);cursor:default;animation:unfold .22s ease-out}
+@keyframes unfold{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px 22px;margin:0}
+.dgrid dt{font-size:12px;color:var(--ink2);margin:0;font-weight:500}
+.dgrid dd{margin:2px 0 0;font-weight:600;word-break:break-all}
+.dgrid .wide{grid-column:1/-1}
+.dgrid .req{font-weight:400;white-space:pre-wrap;color:var(--ink2);font-size:13.5px;max-height:7.5em;overflow:auto}
+.diff{margin:16px 0 0;padding:13px 16px;border-radius:14px;background:var(--amber-t);color:var(--amber-ink);font-size:14px}
+.diff ul{margin:6px 0 0;padding-left:18px}
+.note{margin:12px 0 0;padding:11px 15px;border-radius:14px;background:var(--rust-t);color:var(--rust-ink);font-size:13.5px}
+.hist{margin:16px 0 0;padding:0;list-style:none;font-size:13px;color:var(--ink2)}
+.hist li{position:relative;margin:0;padding:3px 0 3px 18px}
+.hist li::before{content:"";position:absolute;left:3px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--ink3)}
+.linkbtn{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;margin-top:14px;border-radius:999px;background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--line);text-decoration:none;color:var(--ink);font-weight:600;font-size:14px}
+
+/* 빈 상태 · 카드 · 통계 */
+.empty{display:grid;justify-items:center;gap:4px;padding:64px 16px;text-align:center;color:var(--ink2)}
+.empty::before{content:"";width:64px;height:64px;margin-bottom:14px;border-radius:50%;
+  background:radial-gradient(circle,var(--glass) 0 5px,transparent 5.6px),repeating-radial-gradient(circle,transparent 0 6px,color-mix(in srgb,var(--glass) 34%,transparent) 6px 7px);
+  box-shadow:0 0 0 1.5px color-mix(in srgb,var(--glass) 40%,transparent)}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:2px}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh-s);padding:20px 22px;margin-bottom:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(156px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh-s);padding:16px 18px}
+.kpi small{color:var(--ink2);font-size:12.5px;font-weight:500}
+.kpi div{font:300 27px/1.15 var(--disp);font-variant-numeric:tabular-nums;letter-spacing:-.035em;margin-top:6px;white-space:nowrap}
+.kpi div span{font:500 13px var(--body);letter-spacing:0}
+table{width:100%;border-collapse:separate;border-spacing:0 2px;font-size:14px;font-variant-numeric:tabular-nums;margin-top:8px}
+th,td{padding:11px 10px;text-align:right;border:0} th:first-child,td:first-child{text-align:left;border-radius:10px 0 0 10px} th:last-child,td:last-child{border-radius:0 10px 10px 0}
+th{font-size:12.5px;color:var(--ink2);font-weight:600}
+tbody tr:nth-child(odd) td{background:var(--surface2)}
+.scroll{overflow-x:auto}
+.bars rect{fill:var(--sea);opacity:.9} .bars rect:hover{fill:var(--amber);opacity:1} .bars text{fill:var(--ink2);font-size:10px}
+.mini{height:8px;border-radius:4px;background:var(--sea);display:inline-block;vertical-align:middle}
+
+/* ═══════════ 로그인 · 게이트 ═══════════ */
+.center{min-height:100dvh;display:grid;place-items:center;padding:24px}
+.stage{min-height:100dvh;display:grid;grid-template-rows:minmax(250px,36dvh) 1fr}
+.stage.solo{display:grid;place-items:center;padding:24px;grid-template-rows:none}
+@media (min-width:880px){.stage:not(.solo){grid-template-rows:none;grid-template-columns:minmax(0,1.2fr) minmax(400px,.8fr)}}
+.scene{position:relative;overflow:hidden;isolation:isolate;
+  background:radial-gradient(300px 130px at 72% 58%,rgba(242,163,58,.40),transparent 72%),linear-gradient(180deg,#B7D2DC 0%,#D5E6EB 40%,#E6EFF1 58%,#8FBBCA 58.15%,#5B98AB 76%,#2E6D82 100%)}
+.scene .sea{position:absolute;left:0;right:0;top:58%;bottom:0;z-index:-1;background:repeating-linear-gradient(180deg,rgba(255,255,255,.13) 0 1px,transparent 1px 11px);-webkit-mask:linear-gradient(180deg,transparent,#000 75%);mask:linear-gradient(180deg,transparent,#000 75%)}
+.scene .beam{position:absolute;inset:0;z-index:-1;background:conic-gradient(from 252deg at 72% 58%,transparent 0deg,rgba(255,238,200,.62) 9deg,rgba(255,238,200,.18) 26deg,transparent 40deg);-webkit-mask:linear-gradient(90deg,transparent 0,#000 40%);mask:linear-gradient(90deg,transparent 0,#000 40%)}
+.scene .lamp{position:absolute;left:72%;top:58%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#FFE6B0;box-shadow:0 0 0 5px rgba(255,226,160,.35),0 0 28px 10px rgba(255,214,130,.55)}
+.scene-tx{position:absolute;left:clamp(24px,5vw,56px);top:clamp(24px,5vw,52px);display:flex;align-items:center;gap:12px;color:#0F2430}
+.scene-tx b{font:600 17px/1 var(--disp);letter-spacing:.34em}
+.scene-tx .glyph{width:26px;height:26px;background:radial-gradient(circle,#F2A33A 0 3.6px,transparent 4px),repeating-radial-gradient(circle,transparent 0 3.4px,rgba(15,36,48,.4) 3.4px 4.2px);box-shadow:0 0 0 1.5px rgba(15,36,48,.6) inset}
+.scene-cap{position:absolute;left:clamp(24px,5vw,56px);bottom:clamp(22px,4vw,44px);color:#fff;font-size:13px;letter-spacing:.02em;text-shadow:0 1px 12px rgba(15,36,48,.4)}
+.gate{display:grid;place-items:center;padding:32px 24px}
+.panel{width:min(400px,100%)}
+.stage.solo .panel{background:var(--surface);border-radius:28px;box-shadow:var(--sh-m);padding:36px 30px;text-align:center}
+.panel h1{margin:0 0 6px;font-size:28px;font-weight:700;letter-spacing:-.035em;line-height:1.2}
+.panel p{margin:0 0 22px;color:var(--ink2)}
+.panel label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin:16px 0 7px}
+.panel .field{width:100%;min-height:52px;font-size:16px}
+.btn{width:100%;min-height:54px;margin-top:22px;border:0;border-radius:999px;background:var(--sea);color:var(--on-sea);font-weight:700;font-size:16px;letter-spacing:-.01em;box-shadow:0 10px 24px -12px var(--sea);transition:transform .15s,filter .15s}
+@media (hover:hover){.btn:hover{filter:brightness(1.08)}}
+.btn:active{transform:scale(.985)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line);margin-top:10px}
+.btn[disabled]{opacity:.55}
+.err{color:var(--rust-ink);font-size:13.5px;margin-top:12px;min-height:1.4em}
+.gatep .lens{--tone:var(--amber);margin:0 auto 22px;width:92px}
+.gatep .lens::after{display:none}
+.gatep .lens svg{position:relative;z-index:1;width:30px;height:30px;color:var(--amber-ink)}
+.gatep p{font-size:14.5px}
+
+/* ═══════════ 메뉴 · 다이얼로그 · 토스트 ═══════════ */
+.menu{position:absolute;right:16px;top:calc(100% + 4px);min-width:210px;background:var(--surface);border-radius:18px;box-shadow:var(--sh-m);padding:6px;z-index:30}
+.menu button{display:block;width:100%;min-height:44px;padding:0 14px;border:0;border-radius:12px;background:transparent;text-align:left;font-weight:500}
+.menu button:hover{background:var(--surface2)}
+@media (min-width:920px){.menu{right:auto;left:0;right:0;top:auto;bottom:calc(100% + 8px)}}
+dialog{border:0;border-radius:26px;padding:26px;width:min(420px,calc(100% - 32px));background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(8,20,28,.5);backdrop-filter:blur(4px)}
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--canvas);padding:13px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:50;max-width:calc(100% - 32px);font-size:14px;font-weight:500;box-shadow:var(--sh-m)}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (min-width:920px){#toast{bottom:calc(28px + env(safe-area-inset-bottom))}}
+.staffrow{display:flex;align-items:center;gap:12px;padding:13px 0}
+.staffrow + .staffrow{border-top:1px dashed var(--line)}
+.staffrow .grow{min-width:0}
+.mini-btn{min-height:38px;padding:0 15px;border:0;border-radius:999px;background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--line);font-weight:600;font-size:13.5px}
+
+/* ═══════════ 모션 최소화 ═══════════ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .sweep.go::before{width:100%;opacity:1;transform:none;background:var(--amber)}
+  body.ping .lens{box-shadow:0 0 0 3px var(--amber),0 16px 34px -16px var(--amber)}
+}
+
+@media (prefers-color-scheme:dark){
+  .scene{background:radial-gradient(300px 130px at 72% 58%,rgba(245,177,79,.34),transparent 72%),linear-gradient(180deg,#0E2833 0%,#17404F 42%,#245566 58%,#1B4A5B 58.15%,#133848 76%,#0A2230 100%)}
+  .scene .beam{background:conic-gradient(from 252deg at 72% 58%,transparent 0deg,rgba(255,226,170,.34) 9deg,rgba(255,226,170,.09) 26deg,transparent 40deg)}
+  .scene-tx,.scene-tx b{color:#E8F0F3} .scene-tx .glyph{background:radial-gradient(circle,#F5B14F 0 3.6px,transparent 4px),repeating-radial-gradient(circle,transparent 0 3.4px,rgba(232,240,243,.45) 3.4px 4.2px);box-shadow:0 0 0 1.5px rgba(232,240,243,.65) inset}
+  .field{box-shadow:inset 0 0 0 1px var(--line)}
+}
+
+/* 낮은 화면 높이: 레일이 잘리지 않도록 렌즈 축소 */
+@media (min-width:920px) and (max-height:860px){
+  .rail{gap:18px;padding-top:26px;padding-bottom:20px}
+  .lens{width:152px}.lens::before{inset:8px;background:repeating-radial-gradient(circle,transparent 0 6px,color-mix(in srgb,var(--tone) 28%,transparent) 6px 7px)}
+  .hero .n{font-size:70px}.hero .n.long{font-size:44px}.num-w small{font-size:11px}
+  .hero{gap:12px}.hero b{font-size:16px}.pills{margin-top:8px}
+  .tabs button{min-height:42px}.chip{min-height:40px}.bar{gap:6px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<dialog id="dlg"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getFirestore, collection, doc, onSnapshot, query, where, orderBy, limit, getDocs, writeBatch, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+/* ───────── 설정 (README 3번에서 Firebase 값으로 교체) ───────── */
+const FIREBASE_CONFIG = { apiKey: 'AIzaSyBq8Bl5dxD2P_0PJhRfJ7w4mPLpJI8Wo8Q', authDomain: 'hotel-around-rsv.firebaseapp.com', projectId: 'hotel-around-rsv', appId: '1:937935595319:web:6f48d003c308b98f521cb2' };
+const LOGIN_DOMAIN = 'staff.hotelaround.app';   // 직원 로그인ID → ID@도메인 (실제 메일 아님)
+const REPEAT_AFTER_MIN = 5;                     // 미반영이 이 시간을 넘으면 반복음 + 상단 경고
+const STALE_MIN = 5;                            // 메일 수집기가 이 시간 이상 멈추면 경고
+const PRICE_IS_TOTAL = true;                    // 객실입금가가 투숙 전체 합계인지(true) / 1박·1실 단가인지(false) — 실제 건으로 확인 필요
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const won = n => Math.round(n || 0).toLocaleString('ko-KR') + '원';
+const ms = v => v?.toDate ? v.toDate().getTime() : (v instanceof Date ? v.getTime() : 0);
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+const fmtD = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return `${m}.${d} ${DOW[new Date(y, m - 1, d).getDay()]}`; };
+const fmtT = t => { if (!t) return ''; const d = new Date(t), n = new Date(); const hm = `${pad(d.getHours())}:${pad(d.getMinutes())}`; return d.toDateString() === n.toDateString() ? hm : `${d.getMonth() + 1}.${d.getDate()} ${hm}`; };
+const ago = t => { const m = Math.floor((Date.now() - t) / 60000); return m < 1 ? '방금' : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.floor(m / 60)}시간 전` : `${Math.floor(m / 1440)}일 전`; };
+const toast = (m, t = 3200) => { const el = $('#toast'); el.textContent = m; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), t); };
+
+const I = {
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+  bellOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 6.3A6 6 0 0 0 6 9c0 6-2.5 7.5-2.5 7.5H17M18 13.5V9a6 6 0 0 0-9.7-4.7"/><path d="M10 20a2 2 0 0 0 4 0M3 3l18 18"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5M12 17.5v.01"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.8-3.6 3.9-5.5 7.5-5.5s6.7 1.9 7.5 5.5"/></svg>',
+  list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4.5" width="16" height="15" rx="4"/><path d="M8 10h8M8 14h5"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="3.5"/><path d="m4.5 8 7.5 5.5L19.5 8"/></svg>',
+  people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.3 2.9-5 5.5-5s4.9 1.7 5.5 5M16 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.3c1.7.5 2.8 2 3 4.7"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>'
+};
+
+/* ───────── 상태 ───────── */
+const now = new Date();
+const state = {
+  user: null, staff: null, started: false, tab: 'rsv', blocked: '',
+  pending: [], list: [], unparsed: [], staffList: [], heartbeat: null, hbLoaded: false, pendingLoaded: false, listLoaded: false, dataError: false,
+  filter: { scope: 'pending', channel: '', q: '' }, open: null, history: {}, busy: new Set(),
+  stat: { month: `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, basis: 'receipt', channel: '', rows: null, loading: false, trend: null, pii: false },
+  soundOn: true, audioBlocked: false, menu: false
+};
+const alerts = { primed: false, seen: new Map(), ctx: null, lastUrgent: 0, wake: null };
+let app, auth, db, unsubs = [];
+
+if (FIREBASE_CONFIG.apiKey === 'REPLACE') {
+  $('#app').innerHTML = `<div class="center"><div class="panel"><h1>설정이 필요합니다</h1><p>index.html 상단의 FIREBASE_CONFIG 를 Firebase 프로젝트 값으로 바꿔 주세요. (README 3번)</p></div></div>`;
+} else {
+  app = initializeApp(FIREBASE_CONFIG); auth = getAuth(app); db = getFirestore(app);
+  onAuthStateChanged(auth, u => { state.user = u; u ? watchStaff(u) : (stopData(), state.staff = null, state.started = false, state.open = null, mountLogin()); });
+}
+
+/* ───────── 로그인 / 게이트 ───────── */
+function mountLogin(msg = '') {
+  $('#app').innerHTML = `<div class="stage">
+    <div class="scene" aria-hidden="true"><div class="sea"></div><div class="beam"></div><div class="lamp"></div>
+      <div class="scene-tx"><i class="glyph"></i><b>AROUND</b></div><div class="scene-cap">호텔어라운드 속초 · 직원 전용</div></div>
+    <div class="gate"><form class="panel" id="lf" autocomplete="on">
+    <h1>예약 인입 콘솔</h1><p>배정받은 아이디로 로그인해 주세요.</p>
+    <label for="lid">아이디</label><input class="field" id="lid" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+    <label for="lpw">비밀번호</label><input class="field" id="lpw" type="password" autocomplete="current-password" required>
+    <div class="err" id="lerr" role="alert">${esc(msg)}</div>
+    <button class="btn" type="submit">로그인</button></form></div></div>`;
+  $('#lf').onsubmit = async e => {
+    e.preventDefault(); const b = $('.btn'); b.disabled = true; $('#lerr').textContent = '';
+    const id = $('#lid').value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '');
+    try { await signInWithEmailAndPassword(auth, `${id}@${LOGIN_DOMAIN}`, $('#lpw').value); }
+    catch (er) { $('#lerr').textContent = er.code === 'auth/too-many-requests' ? '시도가 너무 많습니다. 잠시 후 다시 해 주세요.' : '아이디 또는 비밀번호를 확인해 주세요.'; b.disabled = false; }
+  };
+}
+function mountGate() {
+  $('#app').innerHTML = `<div class="stage solo"><div class="panel gatep">
+    <div class="lens" aria-hidden="true">${I.bell}</div>
+    <h1>근무 시작</h1><p>${esc(state.staff.name)}님, 새 예약을 놓치지 않으려면 알림을 켜고 이 탭을 열어 두세요.</p>
+    <p style="font-size:13.5px">탭을 닫거나 기기가 절전 상태가 되면 소리가 울리지 않습니다. 근무 중에는 화면 켜짐 유지를 권장합니다.</p>
+    <button class="btn" id="go">알림 켜고 시작</button><button class="btn ghost" id="lo">로그아웃</button></div></div>`;
+  $('#go').onclick = async () => {
+    ensureAudio(); chime('new');
+    try { if ('Notification' in window && Notification.permission === 'default') await Notification.requestPermission(); } catch { }
+    requestWake(); state.started = true; mountMain();
+  };
+  $('#lo').onclick = () => signOut(auth);
+}
+function mountBlocked(msg) {
+  stopData();
+  $('#app').innerHTML = `<div class="stage solo"><div class="panel"><h1>접근할 수 없습니다</h1><p>${esc(msg)}</p><button class="btn" id="lo">로그아웃</button></div></div>`;
+  $('#lo').onclick = () => signOut(auth);
+}
+
+/* ───────── 직원 확인 → 데이터 구독 ───────── */
+function watchStaff(u) {
+  stopData();
+  unsubs.push(onSnapshot(doc(db, 'staff', u.uid), s => {
+    if (!s.exists()) return mountBlocked('승인되지 않은 계정입니다. 점장에게 계정 등록을 요청해 주세요.');
+    const st = s.data();
+    if (!st.active) return mountBlocked('사용이 중지된 계정입니다. 점장에게 문의해 주세요.');
+    const first = !state.staff; state.staff = { ...st, uid: u.uid };
+    if (first) { startData(); state.started ? mountMain() : mountGate(); }
+  }, e => mountBlocked(e.code === 'permission-denied' ? '권한이 없습니다.' : '계정 확인 중 오류가 발생했습니다.')));
+}
+function stopData() { unsubs.forEach(f => f()); unsubs = []; alerts.primed = false; alerts.seen.clear(); state.pending = []; state.list = []; state.hbLoaded = false; state.pendingLoaded = false; state.listLoaded = false; state.dataError = false; }
+const onErr = e => { if (e.code === 'permission-denied' && state.staff) { mountBlocked('권한이 해제되었습니다.'); } else { console.error(e); state.dataError = true; renderChrome(); } };   // 구독이 끊기면 "모두 반영"으로 오인하지 않도록 오류 상태를 화면에 표시
+
+function startData() {
+  const R = collection(db, 'reservations');
+  unsubs.push(onSnapshot(query(R, where('pmsChecked', '==', false), limit(200)), onPending, onErr));
+  unsubs.push(onSnapshot(query(R, orderBy('lastEventAt', 'desc'), limit(150)), s => { state.list = s.docs.map(d => ({ id: d.id, ...d.data() })); state.listLoaded = true; renderChrome(); renderList(); }, onErr));
+  unsubs.push(onSnapshot(query(collection(db, 'unparsed'), where('resolved', '==', false)), s => { state.unparsed = s.docs.map(d => ({ id: d.id, ...d.data() })); renderChrome(); if (state.tab === 'unp') renderPane(); }, onErr));
+  unsubs.push(onSnapshot(doc(db, 'config', 'heartbeat'), s => { state.heartbeat = s.exists() ? s.data() : null; state.hbLoaded = true; renderChrome(); }, onErr));
+  if (state.staff.role === 'admin') unsubs.push(onSnapshot(collection(db, 'staff'), s => { state.staffList = s.docs.map(d => ({ id: d.id, ...d.data() })); if (state.tab === 'acc') renderPane(); }, onErr));
+}
+
+/* ───────── 알림 엔진 ───────── */
+function ensureAudio() {
+  if (!alerts.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) alerts.ctx = new AC(); }
+  if (alerts.ctx && alerts.ctx.state === 'suspended') alerts.ctx.resume().catch(() => { });
+  return alerts.ctx;
+}
+function tone(ctx, f, t0, dur, vol) {
+  const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g).connect(ctx.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function chime(kind) {
+  if (!state.soundOn) return;
+  const ctx = ensureAudio(); if (!ctx) return;
+  if (ctx.state !== 'running') { state.audioBlocked = true; renderChrome(); return; }
+  const t = ctx.currentTime;
+  if (kind === 'new') { tone(ctx, 659.25, t, .55, .24); tone(ctx, 987.77, t + .2, .8, .24); }
+  else { [523.25, 523.25, 659.25].forEach((f, i) => tone(ctx, f, t + i * .3, .45, .32)); }
+}
+document.addEventListener('pointerdown', () => { if (state.audioBlocked) { ensureAudio(); setTimeout(() => { if (alerts.ctx?.state === 'running') { state.audioBlocked = false; renderChrome(); } }, 200); } }, { capture: true });
+async function requestWake() { try { if ('wakeLock' in navigator) alerts.wake = await navigator.wakeLock.request('screen'); } catch { } }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (state.started) requestWake(); ensureAudio(); } });
+
+function sweep() {
+  const el = $('.sweep'); if (!el) return;
+  el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+  const b = document.body; b.classList.remove('ping'); void b.offsetWidth; b.classList.add('ping');   // 렌즈 빔 1회전
+  clearTimeout(sweep.t); sweep.t = setTimeout(() => b.classList.remove('ping'), 2400);
+}
+
+function onPending(snap) {
+  state.pending = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  state.pendingLoaded = true; state.dataError = false;
+  if (!alerts.primed) {
+    state.pending.forEach(d => alerts.seen.set(d.id, ms(d.lastEventAt)));
+    alerts.primed = true;
+  } else {
+    const fresh = [];
+    snap.docChanges().forEach(ch => {
+      if (ch.type === 'removed') return;
+      const d = { id: ch.doc.id, ...ch.doc.data() }; if (d.pmsChecked !== false) return;
+      const t = ms(d.lastEventAt); if (!t) return;
+      if (t > (alerts.seen.get(d.id) || 0)) { alerts.seen.set(d.id, t); fresh.push(d); }
+    });
+    if (fresh.length) fireAlert(fresh);
+  }
+  renderChrome(); renderList();
+}
+function fireAlert(fresh) {
+  chime('new'); sweep();
+  const c = fresh.filter(d => d.status === 'CANCELLED').length, ch = fresh.filter(d => d.status === 'CHANGED').length, nw = fresh.length - c - ch;
+  const parts = [nw && `신규 ${nw}`, ch && `변경 ${ch}`, c && `취소 ${c}`].filter(Boolean).join(' · ');
+  toast(`새 알림 ${parts}`, 6000);
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+    try { const d = fresh[0]; new Notification('호텔어라운드 새 예약 알림', { body: `${parts} · ${d.channel} · ${d.id}`, tag: 'rsv', renotify: true }); } catch { }   // 잠금화면 노출 대비: 고객 정보 제외
+  }
+}
+setInterval(() => {
+  if (!state.started || !state.staff) return;
+  const stale = state.pending.filter(d => Date.now() - ms(d.lastEventAt) > REPEAT_AFTER_MIN * 60000);
+  if (stale.length && Date.now() - alerts.lastUrgent > 60000) { alerts.lastUrgent = Date.now(); chime('urgent'); }
+  renderChrome(); if (!document.hidden) renderList();
+}, 20000);
+let flash = false;
+setInterval(() => {
+  const n = state.pending.length, base = '어라운드 예약 콘솔';
+  if (n && document.hidden) { flash = !flash; document.title = flash ? `● 미반영 ${n}건` : base; } else if (document.title !== base) document.title = base;
+}, 1200);
+
+/* ───────── 메인 화면 ───────── */
+function mountMain() {
+  const admin = state.staff.role === 'admin';
+  $('#app').innerHTML = `
+  <div class="shell">
+    <aside class="rail">
+      <header class="head"><div class="brand"><i class="glyph" aria-hidden="true"></i><b>AROUND</b><span>예약 인입 콘솔</span></div>
+        <div class="bar" id="status"></div></header>
+      <div id="hero"></div>
+      <div class="tabs" role="tablist" id="tabs"></div>
+    </aside>
+    <main class="main"><div id="banners"></div><div id="pane"></div></main>
+    <div class="sweep" aria-hidden="true"></div>
+  </div>`;
+  $('#tabs').dataset.admin = admin ? '1' : '';
+  heroCache = '';
+  renderChrome(); renderPane();
+}
+window.addEventListener('online', () => { if (state.started) renderChrome(); });
+window.addEventListener('offline', () => { if (state.started) renderChrome(); });
+function hbState() {
+  const h = state.heartbeat;
+  if (!state.hbLoaded) return { ok: true, text: '확인 중' };
+  if (h && h.mode === 'night' && ms(h.resumeAt) + 5 * 60000 > Date.now()) { const r = new Date(ms(h.resumeAt)); return { ok: true, night: true, resume: `${pad(r.getHours())}:${pad(r.getMinutes())}`, text: `야간 휴지 · ${pad(r.getHours())}:${pad(r.getMinutes())} 재개` }; }   // 재개 시각+5분이 지나면 자동으로 중단 경고 모드
+  if (!h) return { ok: false, text: '수집기 미가동', long: '메일 수집기가 아직 시작되지 않았습니다. 호텔스토리 메일을 직접 확인해 주세요.' };
+  const okAt = ms(h.lastOkAt), mins = Math.floor((Date.now() - okAt) / 60000);
+  if (h.lastError || mins >= STALE_MIN) return { ok: false, text: `수집 중단 ${mins}분`, long: `메일 수집이 ${mins}분째 멈춰 있습니다. 복구될 때까지 호텔스토리 채널매니저 메일을 직접 확인해 주세요.${h.lastError ? ' (' + h.lastError + ')' : ''}` };
+  return { ok: true, backlog: !!h.backlog, at: okAt, text: h.backlog ? '이전 메일 처리 중' : '메일 수집 정상' };
+}
+
+/* ───────── 상태 요약 카드(히어로) ───────── */
+let heroCache = '';
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const dur = m => m < 1 ? '방금' : m < 60 ? `${m}분` : m < 1440 ? `${Math.floor(m / 60)}시간` : `${Math.floor(m / 1440)}일`;
+const pill = (t, c = '') => `<span class="pill ${c}">${t}</span>`;
+function heroModel(hb) {
+  const P = state.pending, n = P.length, today = todayStr(), nowT = Date.now();
+  // 1) 데이터를 믿을 수 없는 상태는 절대 초록("모두 반영")으로 보이지 않게 한다
+  if (state.dataError) return { tone: 'bad', n: '!', title: '화면을 불러오지 못했습니다', sub: '페이지를 새로고침해 주세요. 그동안 호텔스토리 메일을 직접 확인해 주세요.', pills: [] };
+  if (navigator.onLine === false) return { tone: 'bad', n: '!', title: '인터넷 연결이 끊겼습니다', sub: '이 화면이 최신이 아닐 수 있습니다. 연결을 확인하고, 그동안 호텔스토리 메일을 직접 확인해 주세요.', pills: [] };
+  if (!state.pendingLoaded) return { tone: 'wait', n: '–', title: '확인하는 중입니다', sub: '미반영 예약을 불러오고 있습니다.', pills: [] };
+
+  // 2) 미반영 있음 — 유형별 건수, 가장 오래된 건, 체크인 임박
+  if (n) {
+    const cnt = { n: 0, h: 0, c: 0 };
+    P.forEach(d => { cnt[d.status === 'CANCELLED' ? 'c' : d.status === 'CHANGED' ? 'h' : 'n']++; });
+    const at = d => ms(d.lastEventAt) || nowT;
+    const age = Math.max(0, Math.floor((nowT - Math.min(...P.map(at))) / 60000));
+    const staleN = P.filter(d => nowT - at(d) > REPEAT_AFTER_MIN * 60000).length;
+    const sameDay = P.filter(d => d.checkIn === today).length, past = P.filter(d => d.checkIn && d.checkIn < today).length;
+    const danger = cnt.c || sameDay || past || staleN;
+    const title = cnt.c ? `취소 ${cnt.c}건이 반영 대기 중입니다`
+      : sameDay ? `오늘 체크인 ${sameDay}건이 미반영입니다`
+      : past ? `체크인이 지난 ${past}건이 미반영입니다`
+      : staleN ? `${REPEAT_AFTER_MIN}분 넘게 미반영 ${staleN}건`
+      : 'PMS 반영이 필요합니다';
+    const pills = [pill(`가장 오래된 건 ${age < 1 ? '방금 도착' : dur(age) + ' 경과'}`, age >= REPEAT_AFTER_MIN ? 'bad' : age >= 3 ? 'warn' : '')];
+    if (sameDay) pills.push(pill(`오늘 체크인 ${sameDay}건`, 'bad'));
+    if (past) pills.push(pill(`체크인 지남 ${past}건`, 'bad'));
+    return { tone: danger ? 'bad' : 'need', n: n >= 200 ? '200+' : String(n), title,
+      sub: [cnt.n && `신규 ${cnt.n}`, cnt.h && `변경 ${cnt.h}`, cnt.c && `취소 ${cnt.c}`].filter(Boolean).join(' · '), pills };
+  }
+
+  // 3) 미반영 0건 — 그래도 안심해도 되는 조건이 모두 맞을 때만 초록
+  if (!hb.ok) return { tone: 'bad', n: '0', title: '미반영 0건 — 수집 상태를 확인해 주세요', sub: `${esc(hb.text)} · 호텔스토리 메일을 직접 확인해 주세요.`, pills: [] };
+  if (state.unparsed.length) return { tone: 'bad', n: '0', title: `미반영 0건 · 읽지 못한 메일 ${state.unparsed.length}건`, sub: '미파싱 탭을 확인하고, 해당 예약은 호텔스토리 메일에서 직접 확인해 주세요.', pills: [] };
+  if (hb.backlog) return { tone: 'need', n: '0', title: '이전 메일을 처리하는 중입니다', sub: '처리가 끝날 때까지 미반영 0건을 확정할 수 없습니다.', pills: [] };
+  if (hb.night) return { tone: 'quiet', n: '0', title: '현재 미반영 없음', sub: `야간 휴지 중 · ${esc(hb.resume)} 재개 전까지 새 메일은 수집되지 않습니다.`, pills: [] };
+
+  const pills = [];
+  if (state.listLoaded) {
+    const d0 = new Date(); d0.setHours(0, 0, 0, 0);
+    const todays = state.list.filter(r => ms(r.lastEventAt) >= d0.getTime());
+    const oldestIn = state.list.length ? ms(state.list[state.list.length - 1].lastEventAt) : 0;   // 목록은 lastEventAt 내림차순
+    const truncated = state.list.length >= 150 && oldestIn >= d0.getTime();   // 꽉 찬 목록의 맨 끝이 아직 오늘이면 오늘 집계가 잘렸을 수 있음
+    if (!truncated) {
+      const staffDone = todays.filter(r => r.pmsChecked === true && r.pmsCheckedBy !== 'system');
+      const sys = todays.filter(r => r.pmsCheckedBy === 'system').length;
+      pills.push(pill(`오늘 도착 ${todays.length}건 · 반영 ${staffDone.length}건`));
+      if (sys) pills.push(pill(`자동 이관 ${sys}건은 PMS 대조 필요`, 'warn'));
+    }
+    const last = state.list.filter(r => r.pmsChecked === true && r.pmsCheckedBy !== 'system' && ms(r.pmsCheckedAt)).sort((a, b) => ms(b.pmsCheckedAt) - ms(a.pmsCheckedAt))[0];
+    if (last) pills.push(pill(`마지막 반영 ${esc(last.pmsCheckedByName || '')} ${fmtT(ms(last.pmsCheckedAt))}`));
+  }
+  return { tone: 'ok', n: '0', title: '모두 반영되었습니다', sub: `${esc(hb.text)}${hb.at ? ` · ${fmtT(hb.at)} 확인` : ''}`, pills };
+}
+function heroHtml(hb) {
+  const m = heroModel(hb), lab = m.n === '!' ? '확인 필요' : '미반영', nn = String(m.n);
+  return `<section class="hero ${m.tone}" aria-live="polite"><div class="lens"><div class="num-w"><span class="n${nn.length > 2 ? ' long' : ''}">${esc(m.n)}</span><small>${lab}</small></div></div><div class="tx"><b>${m.title}</b>${m.sub ? `<p>${m.sub}</p>` : ''}${m.pills.length ? `<div class="pills">${m.pills.join('')}</div>` : ''}</div></section>`;
+}
+function renderChrome() {
+  if (!$('#status')) return;
+  const hb = hbState(), n = state.pending.length;
+  $('#status').innerHTML = `
+    <span class="chip ${hb.ok ? '' : 'bad'}"><i class="dot"></i>${esc(hb.text)}</span>
+    <button class="chip ${state.soundOn ? '' : 'bad'}" data-act="sound" aria-pressed="${state.soundOn}" aria-label="${state.soundOn ? '소리 켜짐' : '소리 꺼짐'}">${state.soundOn ? I.bell : I.bellOff}<span class="lbl">${state.soundOn ? '알림음 켜짐' : '알림음 꺼짐'}</span></button>
+    <button class="chip" data-act="menu" aria-haspopup="true" aria-expanded="${state.menu}" aria-label="내 계정 메뉴">${I.user}<span class="lbl">${esc(state.staff.name)} · ${esc(state.staff.title || '')}</span></button>
+    ${state.menu ? `<div class="menu" role="menu"><button data-act="test" role="menuitem">알림음 테스트</button><button data-act="pw" role="menuitem">비밀번호 변경</button><button data-act="logout" role="menuitem">로그아웃</button></div>` : ''}`;
+
+  const b = [];
+  if (!hb.ok) b.push(`<div class="banner b-bad" role="alert">${I.alert}<div class="grow">${esc(hb.long)}</div></div>`);
+  if (state.unparsed.length) b.push(`<div class="banner b-bad" role="alert">${I.alert}<div class="grow">읽지 못한 호텔스토리 메일이 <b>${state.unparsed.length}건</b> 있습니다. 해당 예약은 호텔스토리 메일에서 직접 확인해 주세요.</div><button data-act="tab" data-tab="unp">확인</button></div>`);
+  if (!state.soundOn) b.push(`<div class="banner b-warn">${I.bellOff}<div class="grow"><b>소리가 꺼져 있습니다.</b> 새 예약이 들어와도 화면 표시만 됩니다.</div><button data-act="sound">켜기</button></div>`);
+  if (state.audioBlocked) b.push(`<div class="banner b-warn">${I.bellOff}<div class="grow"><b>브라우저가 소리를 막았습니다.</b> 화면을 한 번 누르면 알림음이 켜집니다.</div></div>`);
+  const stale = state.pending.filter(d => Date.now() - ms(d.lastEventAt) > REPEAT_AFTER_MIN * 60000);
+  if (stale.length) b.push(`<div class="banner b-bad" role="alert">${I.alert}<div class="grow"><b>${REPEAT_AFTER_MIN}분 넘게 PMS 미반영 ${stale.length}건</b> — 가장 오래된 건이 ${ago(Math.min(...stale.map(d => ms(d.lastEventAt))))} 도착했습니다.</div></div>`);
+  $('#banners').innerHTML = b.join('');
+
+  const heroNow = heroHtml(hb);
+  if (heroNow !== heroCache) { heroCache = heroNow; $('#hero').innerHTML = heroNow; }   // 내용이 같으면 다시 그리지 않음(스크린리더 반복 낭독 방지)
+
+  const admin = state.staff.role === 'admin';
+  const tabs = [['rsv', '예약', I.list], ['stat', '통계', I.chart], ['unp', '미파싱', I.mail], ...(admin ? [['acc', '계정', I.people]] : [])];
+  $('#tabs').innerHTML = tabs.map(([k, l, ic]) => `<button role="tab" data-act="tab" data-tab="${k}" aria-selected="${state.tab === k}">${ic}<span>${l}</span>${k === 'unp' && state.unparsed.length ? `<span class="badge">${state.unparsed.length}</span>` : ''}</button>`).join('');
+}
+
+function channels() { return [...new Set([...state.list, ...state.pending].map(r => r.channel).filter(Boolean))].sort(); }
+function renderPane() {
+  const p = $('#pane'); if (!p) return;
+  if (state.tab === 'rsv') {
+    const f = state.filter;
+    p.innerHTML = `<div class="tools">
+      <div class="seg" role="group" aria-label="보기"><button data-act="scope" data-v="pending" aria-pressed="${f.scope === 'pending'}">미반영</button><button data-act="scope" data-v="all" aria-pressed="${f.scope === 'all'}">전체</button></div>
+      <select class="field" id="fch" aria-label="채널"><option value="">모든 채널</option>${channels().map(c => `<option ${f.channel === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      <div class="search grow"><span class="ico" aria-hidden="true">${I.search}</span><input class="field" id="fq" type="search" placeholder="접수번호 · 고객명 · 채널예약번호" value="${esc(f.q)}" aria-label="검색"></div></div><div class="list" id="listBox"></div>`;
+    $('#fch').onchange = e => { f.channel = e.target.value; renderList(); };
+    $('#fq').oninput = e => { f.q = e.target.value; renderList(); };
+    renderList();
+  } else if (state.tab === 'stat') renderStat();
+  else if (state.tab === 'unp') renderUnparsed();
+  else if (state.tab === 'acc') renderAccounts();
+}
+
+function rowHtml(r) {
+  const need = r.pmsChecked === false, cancel = r.status === 'CANCELLED', admin = state.staff.role === 'admin';
+  const tag = cancel ? '<span class="tag t-cancel">취소</span>' : r.status === 'CHANGED' ? '<span class="tag t-change">변경</span>' : '<span class="tag t-new">신규</span>';
+  const lab = { REGISTER: 'PMS 등록', MODIFY: 'PMS 변경 반영', CANCEL: 'PMS 취소 반영' }[r.actionNeeded] || 'PMS 반영';
+  const pax = `성인 ${r.adults || 0}${r.children ? ` · 아동 ${r.children}` : ''}`;
+  const canToggle = need || admin;
+  const td = todayStr(), flag = need && r.checkIn && r.checkIn < td ? '<span class="tag t-past">체크인 지남</span>' : need && r.checkIn === td ? '<span class="tag t-today">오늘 체크인</span>' : '';
+  const chk = `<button class="chk ${state.busy.has(r.id) ? 'busy' : ''}" role="checkbox" aria-checked="${!need}" ${canToggle ? '' : 'aria-disabled="true"'} data-act="check" data-no="${esc(r.id)}">
+      <span class="box">${I.check}</span><span>${need ? `<b>${lab}</b><small>완료하면 체크</small>` : `<b>${esc(r.pmsCheckedByName || '')}</b><small>${fmtT(ms(r.pmsCheckedAt))} 반영 완료</small>`}</span></button>`;
+  return `<article tabindex="0" class="row ${need ? 'need' : 'done'} ${cancel ? 'cancel' : ''}" data-act="open" data-no="${esc(r.id)}" aria-expanded="${state.open === r.id}">
+    <div><div class="l1"><i class="sig" aria-hidden="true"></i>${tag}<span class="ch">${esc(r.channel)}</span>${flag}<span class="mono id">${esc(r.id)}</span><span class="age">${ago(ms(r.lastEventAt))}</span></div>
+      <div class="l2"><span>${esc(r.guestName || '(고객명 없음)')}</span><span class="stay"><span class="num">${fmtD(r.checkIn)}</span><span class="nt num">${r.nights || '?'}박</span><span class="num">${fmtD(r.checkOut)}</span></span></div>
+      <div class="l3">${esc(r.roomType)} · ${pax} · ${r.rooms || 1}실 · <span class="num">${won(r.roomCost)}</span></div></div>
+    ${chk}${state.open === r.id ? detailHtml(r) : ''}</article>`;
+}
+function detailHtml(r) {
+  const kv = (k, v, w) => `<div class="${w ? 'wide' : ''}"><dt>${k}</dt><dd>${esc(v || '—')}</dd></div>`;
+  const ch = (r.changes || []).length ? `<div class="diff"><b>이번에 바뀐 내용</b><ul>${r.changes.map(c => `<li>${esc(c.label)}${c.pii ? ' 변경됨' : `: ${esc(c.from ?? '—')} → <b>${esc(c.to ?? '—')}</b>`}</li>`).join('')}</ul></div>` : '';
+  const warn = (r.warnings || []).length ? `<div class="note">자동 점검 알림: ${esc(r.warnings.join(' / '))}</div>` : '';
+  const auth = r.authOk === false ? `<div class="note">발신 검증 결과가 확인되지 않았습니다. 원문 메일을 열어 확인하세요.</div>` : '';
+  return `<div class="detail" data-stop="1"><dl class="dgrid">
+    ${kv('호텔명', r.hotelName)}${kv('호텔스토리 접수번호', r.id)}${kv('채널명', r.channel)}${kv('투숙기간', r.stayText)}
+    ${kv('고객명', r.guestName)}${kv('연락처', r.phone)}${kv('체크인', r.checkIn)}${kv('체크아웃', r.checkOut)}
+    ${kv('채널예약번호', r.channelResNo)}${kv('호텔스토리 예약번호', r.resNo)}${kv('투숙인원', r.guestsText)}${kv('객실수', String(r.rooms || ''))}
+    ${kv('객실입금가', won(r.roomCost))}${kv('객실종류', r.roomType)}${kv('이메일', r.email, 1)}
+    ${r.request ? `<div class="wide"><dt>고객요청</dt><dd class="req">${esc(r.request)}</dd></div>` : ''}</dl>
+    ${r.note ? `<div class="note">${esc(r.note)}</div>` : ''}${ch}${warn}${auth}
+    <ul class="hist" id="hist-${esc(r.id)}">${state.history[r.id] || '<li>이력을 불러오는 중…</li>'}</ul>
+    ${r.gmailUrl ? `<a class="linkbtn" href="${esc(r.gmailUrl)}" target="_blank" rel="noopener noreferrer">원문 메일 열기</a>` : ''}</div>`;
+}
+function renderList() {
+  const box = $('#listBox'); if (!box) return;
+  const f = state.filter, q = f.q.trim().toLowerCase();
+  let rows = f.scope === 'pending' ? [...state.pending].sort((a, b) => ms(a.lastEventAt) - ms(b.lastEventAt)) : state.list;
+  if (f.channel) rows = rows.filter(r => r.channel === f.channel);
+  if (q) rows = rows.filter(r => [r.id, r.guestName, r.channelResNo, r.resNo].some(v => String(v || '').toLowerCase().includes(q)));
+  box.innerHTML = rows.length ? rows.map(rowHtml).join('') : `<div class="empty"><b>${f.scope === 'pending' && !q ? '지금 확인할 예약이 없습니다' : '조건에 맞는 예약이 없습니다'}</b>${f.scope === 'pending' && !q ? '새 예약이 들어오면 소리와 함께 바로 알려드립니다.' : '검색어나 채널을 바꿔 보세요.'}</div>`;
+}
+async function loadHistory(no) {
+  try {
+    const [e, c] = await Promise.all([
+      getDocs(query(collection(db, 'reservations', no, 'events'), orderBy('mailTs', 'desc'), limit(10))),
+      getDocs(query(collection(db, 'reservations', no, 'checks'), orderBy('at', 'desc'), limit(10)))]);
+    const T = { NEW: '신규', CHANGE: '변경', CANCEL: '취소' };
+    const items = [
+      ...e.docs.map(d => { const x = d.data(); return [ms(x.mailTs), `${T[x.type] || x.type} 메일 수신${x.applied ? '' : ' (반영할 변경 없음)'}`]; }),
+      ...c.docs.map(d => { const x = d.data(); return [ms(x.at), `${esc(x.name)} — ${x.action === 'check' ? 'PMS 반영 확인' : '확인 해제'}`]; })]
+      .sort((a, b) => b[0] - a[0]);
+    state.history[no] = items.map(([t, s]) => `<li>${fmtT(t)} · ${s.startsWith(T.NEW) || s.startsWith(T.CHANGE) || s.startsWith(T.CANCEL) ? esc(s) : s}</li>`).join('') || '<li>이력 없음</li>';
+  } catch { state.history[no] = '<li>이력을 불러오지 못했습니다.</li>'; }
+  const el = document.getElementById('hist-' + no); if (el) el.innerHTML = state.history[no];
+}
+
+/* ───────── 체크 처리 ───────── */
+async function toggleCheck(no) {
+  const r = [...state.pending, ...state.list].find(x => x.id === no); if (!r || state.busy.has(no)) return;
+  const want = r.pmsChecked === false, u = state.staff;
+  if (!want) {
+    if (u.role !== 'admin') return toast('확인 해제는 점장만 할 수 있습니다.');
+    if (!confirm('확인을 해제하면 다시 미반영 알림이 울립니다. 해제할까요?')) return;
+  }
+  state.busy.add(no); renderList();
+  const ref = doc(db, 'reservations', no), b = writeBatch(db);
+  b.update(ref, want ? { pmsChecked: true, pmsCheckedBy: u.uid, pmsCheckedByName: u.name, pmsCheckedAt: serverTimestamp() }
+    : { pmsChecked: false, pmsCheckedBy: null, pmsCheckedByName: null, pmsCheckedAt: null });
+  b.set(doc(collection(ref, 'checks')), { uid: u.uid, name: u.name, action: want ? 'check' : 'uncheck', at: serverTimestamp(), eventTs: r.lastEventAt || null });
+  try { await b.commit(); toast(want ? 'PMS 반영 확인을 기록했습니다.' : '확인을 해제했습니다.'); delete state.history[no]; if (state.open === no) loadHistory(no); }
+  catch (e) { toast(e.code === 'permission-denied' ? '이미 다른 담당자가 처리했거나 권한이 없습니다. 목록을 새로 확인하세요.' : '저장하지 못했습니다. 네트워크를 확인하고 다시 눌러 주세요.'); }
+  finally { state.busy.delete(no); renderList(); }
+}
+
+/* ───────── 통계 ───────── */
+function monthOpts() { const o = [], d = new Date(); for (let i = 0; i < 18; i++) { o.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}`); d.setMonth(d.getMonth() - 1); } return o; }
+const nextMonth = m => { const [y, mo] = m.split('-').map(Number); return mo === 12 ? `${y + 1}-01-01` : `${y}-${pad(mo + 1)}-01`; };
+async function loadStat() {
+  const s = state.stat; s.loading = true; renderStat();
+  const field = s.basis === 'receipt' ? 'receiptDate' : 'checkIn';
+  try {
+    const snap = await getDocs(query(collection(db, 'reservations'), where(field, '>=', `${s.month}-01`), where(field, '<', nextMonth(s.month))));
+    s.rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch { s.rows = null; toast('통계를 불러오지 못했습니다.'); }
+  s.loading = false; renderStat();
+}
+const total = r => PRICE_IS_TOTAL ? (r.roomCost || 0) : (r.roomCost || 0) * (r.nights || 0) * (r.rooms || 1);
+function agg(rows) {
+  const valid = rows.filter(r => r.status !== 'CANCELLED'), canc = rows.length - valid.length;
+  const rn = valid.reduce((a, r) => a + (r.nights || 0) * (r.rooms || 1), 0), amt = valid.reduce((a, r) => a + total(r), 0);
+  return { n: valid.length, canc, rate: rows.length ? canc / rows.length : 0, rn, amt, adr: rn ? amt / rn : 0, valid };
+}
+function renderStat() {
+  const p = $('#pane'), s = state.stat;
+  const ctl = `<div class="tools"><select class="field" id="smo" aria-label="월">${monthOpts().map(m => `<option ${m === s.month ? 'selected' : ''} value="${m}">${m.replace('-', '년 ')}월</option>`).join('')}</select>
+    <div class="seg" role="group" aria-label="기준"><button data-act="basis" data-v="receipt" aria-pressed="${s.basis === 'receipt'}">접수일 기준</button><button data-act="basis" data-v="checkin" aria-pressed="${s.basis === 'checkin'}">체크인 기준</button></div>
+    <select class="field" id="sch" aria-label="채널"><option value="">전체 채널</option>${[...new Set((s.rows || []).map(r => r.channel))].sort().map(c => `<option ${s.channel === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+    <button class="mini-btn" data-act="statload">${s.rows ? '새로고침' : '불러오기'}</button></div>`;
+  let body = '';
+  if (s.loading) body = '<div class="empty"><b>불러오는 중…</b></div>';
+  else if (!s.rows) body = '<div class="empty"><b>월과 기준을 고른 뒤 불러오기를 누르세요</b>조회한 만큼 읽기 횟수가 사용됩니다.</div>';
+  else {
+    const rows = s.channel ? s.rows.filter(r => r.channel === s.channel) : s.rows, A = agg(rows);
+    const chans = [...new Set(s.rows.map(r => r.channel))].map(c => ({ c, ...agg(s.rows.filter(r => r.channel === c)) })).sort((a, b) => b.n - a.n);
+    const key = s.basis === 'receipt' ? 'receiptDate' : 'checkIn', days = new Date(+s.month.slice(0, 4), +s.month.slice(5), 0).getDate(), cnt = Array(days).fill(0);
+    A.valid.forEach(r => { const d = +String(r[key]).slice(8, 10); if (d >= 1 && d <= days) cnt[d - 1]++; });
+    const mx = Math.max(1, ...cnt), W = 640, H = 130, bw = W / days;
+    const svg = `<svg class="bars" viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="일별 유효 예약 건수">${cnt.map((v, i) => `<g><title>${i + 1}일 ${v}건</title><rect x="${i * bw + 2}" y="${H - (v / mx) * (H - 10)}" width="${bw - 4}" height="${(v / mx) * (H - 10)}" rx="3"/></g>${(i + 1) % 5 === 0 || i === 0 ? `<text x="${i * bw + bw / 2}" y="${H + 14}" text-anchor="middle">${i + 1}</text>` : ''}`).join('')}</svg>`;
+    body = `<div class="kpis"><div class="kpi"><small>유효 예약</small><div>${A.n}건</div></div><div class="kpi"><small>취소</small><div>${A.canc}건 <span style="font-size:14px;color:var(--ink2)">${(A.rate * 100).toFixed(1)}%</span></div></div>
+      <div class="kpi"><small>객실박수</small><div>${A.rn}</div></div><div class="kpi"><small>입금가 합계</small><div>${won(A.amt)}</div></div><div class="kpi"><small>객실박당 평균</small><div>${won(A.adr)}</div></div></div>
+      <div class="card"><b>${s.basis === 'receipt' ? '접수일' : '체크인'}별 유효 예약</b>${svg}</div>
+      <div class="card scroll"><table><thead><tr><th>채널</th><th>유효</th><th>취소</th><th>취소율</th><th>객실박</th><th>입금가</th><th>비중</th></tr></thead><tbody>
+      ${chans.map(x => `<tr><td>${esc(x.c)}</td><td>${x.n}</td><td>${x.canc}</td><td>${(x.rate * 100).toFixed(1)}%</td><td>${x.rn}</td><td>${won(x.amt)}</td><td>${total0(chans) ? ((x.amt / total0(chans)) * 100).toFixed(0) : 0}%</td></tr>`).join('')}</tbody></table></div>
+      <div class="card scroll"><b>객실종류별${s.channel ? ' (' + esc(s.channel) + ')' : ''}</b><table><thead><tr><th>객실종류</th><th>유효</th><th>취소</th><th>객실박</th><th>입금가</th><th>객실박당</th></tr></thead><tbody>
+      ${[...new Set(rows.map(r => r.roomType || '(미표기)'))].map(t => ({ t, ...agg(rows.filter(r => (r.roomType || '(미표기)') === t)) })).sort((a, b) => b.n - a.n).map(x => `<tr><td>${esc(x.t)}</td><td>${x.n}</td><td>${x.canc}</td><td>${x.rn}</td><td>${won(x.amt)}</td><td>${won(x.adr)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="tools"><button class="mini-btn" data-act="csv">CSV 내려받기</button>${state.staff.role === 'admin' ? `<label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" id="spii" ${s.pii ? 'checked' : ''}> 개인정보(고객명·연락처·이메일) 포함</label>` : ''}
+      <button class="mini-btn" data-act="trend">최근 12개월 추이 ${s.trend ? '새로고침' : '불러오기'}</button></div>
+      ${s.trend ? trendHtml(s.trend) : ''}
+      <p style="color:var(--ink2);font-size:12.5px">유효 예약 = 취소 제외. 입금가는 ${PRICE_IS_TOTAL ? '투숙 전체 합계' : '1박·1실 단가 × 박수 × 객실수'}로 계산합니다.</p>`;
+  }
+  p.innerHTML = ctl + body;
+  $('#smo').onchange = e => { s.month = e.target.value; s.rows = null; renderStat(); };
+  $('#sch').onchange = e => { s.channel = e.target.value; renderStat(); };
+  const sp = $('#spii'); if (sp) sp.onchange = e => { s.pii = e.target.checked; };
+}
+const total0 = ch => ch.reduce((a, x) => a + x.amt, 0);
+function trendHtml(t) {
+  const mx = Math.max(1, ...t.map(x => x.n));
+  return `<div class="card scroll"><b>월별 추이 (접수일 기준)</b><table><thead><tr><th>월</th><th>유효</th><th></th><th>취소</th><th>입금가</th></tr></thead><tbody>${t.map(x => `<tr><td>${x.m}</td><td>${x.n}</td><td style="text-align:left"><span class="mini" style="width:${(x.n / mx) * 120}px"></span></td><td>${x.canc}</td><td>${won(x.amt)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+async function loadTrend() {
+  const ms12 = monthOpts().slice(0, 12).reverse();
+  toast('12개월 데이터를 조회합니다…');
+  try {
+    const snap = await getDocs(query(collection(db, 'reservations'), where('receiptDate', '>=', `${ms12[0]}-01`), where('receiptDate', '<', nextMonth(ms12[11]))));
+    const by = {}; snap.docs.forEach(d => { const r = d.data(), m = String(r.receiptDate).slice(0, 7); (by[m] ||= []).push(r); });
+    state.stat.trend = ms12.map(m => { const a = agg(by[m] || []); return { m, n: a.n, canc: a.canc, amt: a.amt }; });
+    toast(`${snap.size}건 조회 완료`); renderStat();
+  } catch { toast('추이를 불러오지 못했습니다.'); }
+}
+const csvCell = v => { let s = String(v ?? ''); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };   // 엑셀 수식 주입 방지
+function downloadCsv() {
+  const s = state.stat; if (!s.rows) return;
+  const rows = s.channel ? s.rows.filter(r => r.channel === s.channel) : s.rows, pii = state.staff.role === 'admin' && s.pii;
+  const head = ['호텔명', '접수번호', '접수일', '상태', '채널명', '투숙기간(박)', '체크인', '체크아웃', '객실종류', '채널예약번호', '투숙인원', '객실수', '객실입금가', ...(pii ? ['고객명', '연락처', '이메일'] : [])];
+  const T = { NEW: '신규', CHANGED: '변경', CANCELLED: '취소' };
+  const lines = [head, ...rows.map(r => [r.hotelName, r.id, r.receiptDate, T[r.status] || r.status, r.channel, r.nights, r.checkIn, r.checkOut, r.roomType, r.channelResNo, r.guestsText, r.rooms, r.roomCost, ...(pii ? [r.guestName, r.phone, r.email] : [])])].map(l => l.map(csvCell).join(','));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+  a.download = `예약_${s.month}_${s.basis === 'receipt' ? '접수일' : '체크인'}${s.channel ? '_' + s.channel : ''}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ───────── 미파싱 / 계정 ───────── */
+function renderUnparsed() {
+  const u = [...state.unparsed].sort((a, b) => ms(b.receivedAt) - ms(a.receivedAt));
+  $('#pane').innerHTML = u.length ? `<div class="list">${u.map(x => `<article class="card" style="margin:0"><div class="l1"><span class="tag t-cancel">읽지 못함</span><span class="age">${fmtT(ms(x.receivedAt))}</span></div>
+    <p style="margin:8px 0 4px;font-weight:600;word-break:break-all">${esc(x.subject)}</p><p style="margin:0;color:var(--ink2);font-size:13.5px">${esc(x.reason)}</p>
+    <div class="tools" style="margin:12px 0 0"><a class="linkbtn" style="margin:0" href="${esc(x.gmailUrl)}" target="_blank" rel="noopener noreferrer">원문 메일 열기</a><button class="mini-btn" data-act="resolve" data-id="${esc(x.id)}">직접 처리했음</button></div></article>`).join('')}</div>`
+    : `<div class="empty"><b>읽지 못한 메일이 없습니다</b>호텔스토리 메일 서식이 바뀌면 여기에 쌓입니다.</div>`;
+}
+function renderAccounts() {
+  const me = state.staff.uid, L = [...state.staffList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
+  $('#pane').innerHTML = `<div class="card"><b>직원 계정</b>${L.map(s => `<div class="staffrow"><div class="grow"><b>${esc(s.name)}</b> <span style="color:var(--ink2)">${esc(s.title || '')} · ${esc(s.loginId || '')}</span></div>
+    <span class="chip ${s.active ? '' : 'bad'}"><i class="dot"></i>${s.active ? '사용 중' : '중지'}</span>${s.id === me ? '' : `<button class="mini-btn" data-act="active" data-id="${esc(s.id)}" data-v="${s.active ? 0 : 1}">${s.active ? '사용 중지' : '다시 사용'}</button>`}</div>`).join('') || '<p>등록된 직원이 없습니다.</p>'}</div>
+    <form class="card" id="nf"><b>직원 추가</b>
+    <div class="tools" style="margin-top:12px"><input class="field grow" id="nn" placeholder="이름" required maxlength="20"><input class="field grow" id="ni" placeholder="로그인 아이디 (영문·숫자)" required autocapitalize="none" pattern="[A-Za-z0-9._-]{3,20}">
+    <select class="field" id="nt"><option>매니저</option><option>부점장</option><option>점장</option></select></div>
+    <div class="tools"><input class="field grow" id="np" type="password" placeholder="임시 비밀번호 (8자 이상)" minlength="8" required autocomplete="new-password"><button class="mini-btn" style="min-height:44px">계정 만들기</button></div>
+    <p style="color:var(--ink2);font-size:12.5px;margin:0">비밀번호를 잊은 직원은 계정을 중지한 뒤 새 아이디로 다시 등록하거나, Firebase 콘솔에서 재설정합니다. 중지 즉시 모든 데이터 접근이 막힙니다.</p></form>`;
+  $('#nf').onsubmit = async e => {
+    e.preventDefault(); const btn = $('#nf button'); btn.disabled = true;
+    const id = $('#ni').value.trim().toLowerCase(), name = $('#nn').value.trim(), title = $('#nt').value, pw = $('#np').value;
+    if (state.staffList.some(s => s.loginId === id)) { btn.disabled = false; return toast('이미 쓰는 아이디입니다.'); }
+    const sec = initializeApp(FIREBASE_CONFIG, 'sec' + Date.now());
+    try {
+      const cred = await createUserWithEmailAndPassword(getAuth(sec), `${id}@${LOGIN_DOMAIN}`, pw);
+      await setDoc(doc(db, 'staff', cred.user.uid), { name, title, role: title === '점장' ? 'admin' : 'manager', loginId: id, active: true, createdAt: serverTimestamp(), createdBy: me });
+      toast(`${name} 계정을 만들었습니다.`); $('#nf').reset();
+    } catch (er) { toast(er.code === 'auth/email-already-in-use' ? '이미 쓰는 아이디입니다.' : er.code === 'auth/weak-password' ? '비밀번호가 너무 약합니다.' : '계정을 만들지 못했습니다. 이미 만들어졌는지 목록을 확인하세요.'); }
+    finally { try { await signOut(getAuth(sec)); await deleteApp(sec); } catch { } btn.disabled = false; }
+  };
+}
+
+/* ───────── 이벤트 위임 ───────── */
+document.addEventListener('click', async e => {
+  if (e.target.closest('[data-stop]') && !e.target.closest('[data-act]')) return;
+  const el = e.target.closest('[data-act]'); const menu = e.target.closest('.menu');
+  if (state.menu && !menu && el?.dataset.act !== 'menu') { state.menu = false; renderChrome(); }
+  if (!el) return;
+  const a = el.dataset.act, d = el.dataset;
+  if (a === 'check') { e.stopPropagation(); return toggleCheck(d.no); }
+  if (a === 'open') { if (e.target.closest('a,button.chk,.detail')) return; state.open = state.open === d.no ? null : d.no; renderList(); if (state.open) loadHistory(state.open); return; }
+  if (a === 'tab') { state.tab = d.tab; renderChrome(); renderPane(); }
+  else if (a === 'scope') { state.filter.scope = d.v; renderPane(); }
+  else if (a === 'sound') { state.soundOn = !state.soundOn; if (state.soundOn) { ensureAudio(); chime('new'); } renderChrome(); }
+  else if (a === 'menu') { state.menu = !state.menu; renderChrome(); }
+  else if (a === 'test') { state.menu = false; renderChrome(); ensureAudio(); chime('new'); setTimeout(() => chime('urgent'), 1200); sweep(); }
+  else if (a === 'logout') { state.started = false; signOut(auth); }
+  else if (a === 'pw') { state.menu = false; renderChrome(); pwDialog(); }
+  else if (a === 'basis') { state.stat.basis = d.v; state.stat.rows = null; renderStat(); }
+  else if (a === 'statload') loadStat();
+  else if (a === 'trend') loadTrend();
+  else if (a === 'csv') downloadCsv();
+  else if (a === 'resolve') { try { await updateDoc(doc(db, 'unparsed', d.id), { resolved: true, resolvedByName: state.staff.name, resolvedAt: serverTimestamp() }); toast('처리 완료로 표시했습니다.'); } catch { toast('저장하지 못했습니다.'); } }
+  else if (a === 'active') { try { await updateDoc(doc(db, 'staff', d.id), { active: d.v === '1' }); toast(d.v === '1' ? '계정을 다시 사용합니다.' : '계정을 중지했습니다.'); } catch { toast('저장하지 못했습니다.'); } }
+});
+document.addEventListener('keydown', e => { const r = e.target.closest?.('article.row'); if (r && e.target === r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); r.click(); } });
+function pwDialog() {
+  const dlg = $('#dlg');
+  dlg.innerHTML = `<form method="dialog" id="pf"><h2 style="margin:0 0 12px;font-size:19px">비밀번호 변경</h2>
+    <label class="sr" for="p0">현재 비밀번호</label><input class="field" style="width:100%;margin-bottom:10px" id="p0" type="password" placeholder="현재 비밀번호" autocomplete="current-password" required>
+    <label class="sr" for="p1">새 비밀번호</label><input class="field" style="width:100%" id="p1" type="password" placeholder="새 비밀번호 (8자 이상)" minlength="8" autocomplete="new-password" required>
+    <div class="err" id="pe" role="alert"></div><button class="btn" id="pok" type="submit" value="ok">변경</button><button class="btn ghost" type="button" id="pcx">취소</button></form>`;
+  dlg.showModal();
+  $('#pcx').onclick = () => dlg.close();
+  $('#pf').onsubmit = async e => {
+    e.preventDefault();
+    try { const u = auth.currentUser; await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, $('#p0').value)); await updatePassword(u, $('#p1').value); dlg.close(); toast('비밀번호를 변경했습니다.'); }
+    catch (er) { $('#pe').textContent = er.code === 'auth/weak-password' ? '새 비밀번호가 너무 약합니다.' : '현재 비밀번호를 확인해 주세요.'; }
+  };
+}
+</script>
+</body>
+</html>
