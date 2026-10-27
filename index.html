@@ -421,7 +421,9 @@ function heroModel(hb) {
   if (state.listLoaded) {
     const d0 = new Date(); d0.setHours(0, 0, 0, 0);
     const todays = state.list.filter(r => ms(r.lastEventAt) >= d0.getTime());
-    if (state.list.length < 150) {   // 목록이 상한(150)에 닿으면 오늘 집계가 잘릴 수 있어 표시하지 않는다
+    const oldestIn = state.list.length ? ms(state.list[state.list.length - 1].lastEventAt) : 0;   // 목록은 lastEventAt 내림차순
+    const truncated = state.list.length >= 150 && oldestIn >= d0.getTime();   // 꽉 찬 목록의 맨 끝이 아직 오늘이면 오늘 집계가 잘렸을 수 있음
+    if (!truncated) {
       const staffDone = todays.filter(r => r.pmsChecked === true && r.pmsCheckedBy !== 'system');
       const sys = todays.filter(r => r.pmsCheckedBy === 'system').length;
       pills.push(pill(`오늘 도착 ${todays.length}건 · 반영 ${staffDone.length}건`));
