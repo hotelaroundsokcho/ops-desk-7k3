@@ -70,6 +70,7 @@ button{cursor:pointer}
 .chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 13px;border-radius:999px;border:0;background:var(--surface);box-shadow:var(--sh-s);font-size:13px;font-weight:500;white-space:nowrap;max-width:60vw;overflow:hidden;text-overflow:ellipsis}
 .chip svg{width:17px;height:17px;flex:none}
 .chip .lbl{display:none}
+.chip.lo{display:none}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--glass);flex:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--glass) 22%,transparent)}
 .chip.bad{background:var(--rust-t);color:var(--rust-ink)} .chip.bad .dot{background:var(--rust);box-shadow:0 0 0 3px color-mix(in srgb,var(--rust) 24%,transparent)}
 .chip.warn{background:var(--amber-t);color:var(--amber-ink)} .chip.warn .dot{background:var(--amber)}
@@ -132,6 +133,8 @@ body.ping .lens::after{animation:beam 2.1s cubic-bezier(.4,0,.2,1) 1}
   .bar{order:3;margin-top:auto;position:relative;display:grid;gap:8px;justify-content:stretch}
   .chip{max-width:none;width:100%;min-height:44px;border-radius:14px}
   .chip .lbl{display:inline}
+  .chip.lo{display:inline-flex}
+  .chip.lo:not(.bad){color:var(--ink2)}
   .main{padding:34px 36px 80px 14px}
   .main>div{max-width:900px}
 
@@ -365,10 +368,12 @@ const state = {
   pending: [], list: [], unparsed: [], staffList: [], heartbeat: null, hbLoaded: false, pendingLoaded: false, listLoaded: false, dataError: false,
   filter: { scope: 'pending', channel: '', q: '' }, open: null, history: {}, busy: new Set(),
   stat: { month: `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, basis: 'receipt', channel: '', rows: null, loading: false, trend: null, pii: false },
-  soundOn: true, audioBlocked: false, menu: false
+  soundOn: true, audioBlocked: false, menu: false, loAsk: false
 };
 const alerts = { primed: false, seen: new Map(), ctx: null, lastUrgent: 0, wake: null };
 let app, auth, db, unsubs = [];
+let loTimer = 0;
+I.out = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H9"/><path d="M14 8l4 4-4 4M18 12H9.5"/></svg>';
 
 if (FIREBASE_CONFIG.apiKey === 'REPLACE') {
   $('#app').innerHTML = `<div class="center"><div class="panel"><h1>설정이 필요합니다</h1><p>index.html 상단의 FIREBASE_CONFIG 를 Firebase 프로젝트 값으로 바꿔 주세요. (README 3번)</p></div></div>`;
@@ -604,6 +609,7 @@ function renderChrome() {
     <span class="chip ${hb.ok ? '' : 'bad'}"><i class="dot"></i>${esc(hb.text)}</span>
     <button class="chip ${state.soundOn ? '' : 'bad'}" data-act="sound" aria-pressed="${state.soundOn}" aria-label="${state.soundOn ? '소리 켜짐' : '소리 꺼짐'}">${state.soundOn ? I.bell : I.bellOff}<span class="lbl">${state.soundOn ? '알림음 켜짐' : '알림음 꺼짐'}</span></button>
     <button class="chip" data-act="menu" aria-haspopup="true" aria-expanded="${state.menu}" aria-label="내 계정 메뉴">${I.user}<span class="lbl">${esc(state.staff.name)} · ${esc(state.staff.title || '')}</span></button>
+    <button class="chip lo${state.loAsk ? ' bad' : ''}" data-act="lo" aria-label="${state.loAsk ? '한 번 더 누르면 로그아웃됩니다' : '로그아웃'}">${I.out}<span class="lbl">${state.loAsk ? '한 번 더 누르면 로그아웃' : '로그아웃'}</span></button>
     ${state.menu ? `<div class="menu" role="menu"><button data-act="test" role="menuitem">알림음 테스트</button><button data-act="pw" role="menuitem">비밀번호 변경</button><button data-act="logout" role="menuitem">로그아웃</button></div>` : ''}`;
 
   const b = [];
@@ -824,6 +830,7 @@ document.addEventListener('click', async e => {
   if (e.target.closest('[data-stop]') && !e.target.closest('[data-act]')) return;
   const el = e.target.closest('[data-act]'); const menu = e.target.closest('.menu');
   if (state.menu && !menu && el?.dataset.act !== 'menu') { state.menu = false; renderChrome(); }
+  if (state.loAsk && (!el || el.dataset.act !== 'lo')) { state.loAsk = false; clearTimeout(loTimer); renderChrome(); }
   if (!el) return;
   const a = el.dataset.act, d = el.dataset;
   if (a === 'check') { e.stopPropagation(); return toggleCheck(d.no); }
@@ -833,6 +840,10 @@ document.addEventListener('click', async e => {
   else if (a === 'sound') { state.soundOn = !state.soundOn; if (state.soundOn) { ensureAudio(); chime('new'); } renderChrome(); }
   else if (a === 'menu') { state.menu = !state.menu; renderChrome(); }
   else if (a === 'test') { state.menu = false; renderChrome(); ensureAudio(); chime('new'); setTimeout(() => chime('urgent'), 1200); sweep(); }
+  else if (a === 'lo') {
+    if (!state.loAsk) { state.loAsk = true; clearTimeout(loTimer); loTimer = setTimeout(() => { state.loAsk = false; renderChrome(); }, 4000); renderChrome(); const nb = document.querySelector('#status [data-act="lo"]'); if (nb) nb.focus(); }
+    else { state.loAsk = false; clearTimeout(loTimer); state.started = false; signOut(auth); }
+  }
   else if (a === 'logout') { state.started = false; signOut(auth); }
   else if (a === 'pw') { state.menu = false; renderChrome(); pwDialog(); }
   else if (a === 'basis') { state.stat.basis = d.v; state.stat.rows = null; renderStat(); }
