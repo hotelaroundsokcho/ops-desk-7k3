@@ -318,6 +318,61 @@ dialog::backdrop{background:rgba(8,20,28,.5);backdrop-filter:blur(4px)}
   .hero{gap:12px}.hero b{font-size:16px}.pills{margin-top:8px}
   .tabs button{min-height:42px}.chip{min-height:40px}.bar{gap:6px}
 }
+
+/* ═══════════ 문의 탭 — 수위 게이지 ═══════════
+   한 장의 카드 왼쪽에 가는 수위 막대가 있다. 답을 기다린 시간만큼 아래에서 위로 차오르고
+   청록(방금) → 호박(30분↑) → 녹슨 닻(120분↑)으로 바뀐다. 답변 완료되면 해초색으로 가득 찬 채 멈춘다. */
+.iq-go{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.iq-go a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 8px;border-radius:999px;background:var(--surface);box-shadow:var(--sh-s);color:var(--ink);text-decoration:none;font-weight:650;font-size:14px}
+.iq-go a:hover{background:var(--surface2)}
+.iq-go a svg{width:15px;height:15px;color:var(--ink3)}
+.iq-mk{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sea-t);color:var(--sea-d);font:700 13px/1 var(--disp);letter-spacing:0}
+.iq-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.iq-chs{display:flex;gap:6px;flex-wrap:wrap}
+.iq-chs button{min-height:40px;padding:0 14px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1.5px var(--line);font-weight:600;font-size:13.5px;color:var(--ink2)}
+.iq-chs button[aria-pressed=true]{background:var(--ink);color:var(--surface);box-shadow:none}
+.iq{position:relative;overflow:hidden;background:var(--surface);border-radius:var(--r);box-shadow:var(--sh-s);padding:16px 18px 16px 30px;--g:var(--sea);--gt:var(--sea-d)}
+.iq.warn{--g:var(--amber);--gt:var(--amber-ink)} .iq.late{--g:var(--rust);--gt:var(--rust-ink)} .iq.ok{--g:var(--glass);--gt:var(--glass-ink)}
+.iq.ok{background:color-mix(in srgb,var(--surface) 70%,transparent);box-shadow:none}
+.iq .gauge{position:absolute;left:11px;top:14px;bottom:14px;width:6px;border-radius:6px;background:color-mix(in srgb,var(--ink) 9%,transparent);overflow:hidden}
+.iq .gauge i{position:absolute;inset:0;border-radius:6px;background:var(--g);transform-origin:bottom;transform:scaleY(var(--fill,0));transition:transform .6s cubic-bezier(.2,.8,.2,1),background-color .3s}
+.iq.rise .gauge i{animation:iq-rise .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes iq-rise{from{transform:scaleY(0)}}
+.iq-l1{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.iq-l1 .ch{font-weight:700;font-size:14px}
+.iq-wait{margin-left:auto;font:700 14px/1 var(--disp);color:var(--gt);font-variant-numeric:tabular-nums;letter-spacing:0}
+.iq-l2{margin:8px 0 0;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.iq-l2 b{font-size:16.5px;letter-spacing:-.02em}
+.iq-l2 span{color:var(--ink2);font-size:13px}
+.t-urgent{background:var(--rust);color:var(--on-rust)}
+.t-cat{background:var(--surface2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink2)}
+.iq-msg{margin:10px 0 0;font-size:15px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.iq.full .iq-msg{display:block;white-space:pre-wrap;-webkit-line-clamp:unset;overflow:visible}
+.iq-more{margin:6px 0 0;border:0;background:none;padding:6px 0;min-height:32px;color:var(--sea-d);font-weight:650;font-size:13px}
+.iq-act{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.btn-p,.btn-s,.iq-done{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:0 18px;border-radius:999px;border:0;font-weight:700;font-size:14.5px;text-decoration:none;letter-spacing:-.01em}
+.btn-p{background:var(--sea);color:var(--on-sea)} .btn-p:hover{background:var(--sea-d)}
+.btn-s{background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink);font-weight:600}
+.btn-p svg,.btn-s svg{width:16px;height:16px}
+.iq-done{margin-left:auto;background:var(--glass-t);color:var(--glass-ink)}
+.iq-done svg{width:18px;height:18px}
+.iq-done.busy{opacity:.55;pointer-events:none}
+.iq.ok .iq-done{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink2);font-weight:600}
+.iq-by{font-size:13px;color:var(--gt);font-weight:600}
+.iq-note{margin:14px 4px 0;color:var(--ink3);font-size:12.5px;line-height:1.6}
+.iq-sk{height:132px;border-radius:var(--r);background:linear-gradient(100deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%) 0 0/300% 100%;animation:iq-sh 1.4s linear infinite;box-shadow:var(--sh-s)}
+@keyframes iq-sh{to{background-position:-300% 0}}
+.tabs .badge.soft{background:var(--sea);color:var(--on-sea)}
+@media (max-width:640px){
+  .iq-go{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:10px}
+  .iq-go a{min-width:0;justify-content:flex-start;gap:7px;min-height:42px;padding:0 10px 0 6px;font-size:13px;white-space:nowrap}
+  .iq-go a .iq-mk{width:24px;height:24px;font-size:12px;flex:none} .iq-go a svg{display:none}
+  .iq-tools{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-16px;padding-right:16px}
+  .iq-tools::-webkit-scrollbar{display:none}
+  .iq-chs{flex-wrap:nowrap} .iq-chs button,.seg{flex:none;white-space:nowrap}
+  .iq-done{margin-left:0;flex:1 1 0}.btn-p{flex:1 1 100%}.btn-s{flex:1 1 0}
+}
+.iq.ok .btn-p{background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -358,14 +413,16 @@ const I = {
   chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>',
   mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="3.5"/><path d="m4.5 8 7.5 5.5L19.5 8"/></svg>',
   people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.3 2.9-5 5.5-5s4.9 1.7 5.5 5M16 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.3c1.7.5 2.8 2 3 4.7"/></svg>',
-  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>'
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/><path d="M8 10h8M8 13.5h5"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16 16 8M9 8h7v7"/></svg>'
 };
 
 /* ───────── 상태 ───────── */
 const now = new Date();
 const state = {
   user: null, staff: null, started: false, tab: 'rsv', blocked: '',
-  pending: [], list: [], unparsed: [], staffList: [], heartbeat: null, hbLoaded: false, pendingLoaded: false, listLoaded: false, dataError: false,
+  pending: [], list: [], unparsed: [], inq: [], inqLoaded: false, inqError: false, inqHb: null, inqHbLoaded: false, inqFilter: { scope: 'open', channel: '' }, inqFull: new Set(), staffList: [], heartbeat: null, hbLoaded: false, pendingLoaded: false, listLoaded: false, dataError: false,
   filter: { scope: 'pending', channel: '', q: '' }, open: null, history: {}, busy: new Set(),
   stat: { month: `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, basis: 'receipt', channel: '', rows: null, loading: false, trend: null, pii: false },
   soundOn: true, audioBlocked: false, menu: false, loAsk: false
@@ -430,7 +487,7 @@ function watchStaff(u) {
     if (first) { startData(); state.started ? mountMain() : mountGate(); }
   }, e => mountBlocked(e.code === 'permission-denied' ? '권한이 없습니다.' : '계정 확인 중 오류가 발생했습니다.')));
 }
-function stopData() { unsubs.forEach(f => f()); unsubs = []; alerts.primed = false; alerts.seen.clear(); state.pending = []; state.list = []; state.hbLoaded = false; state.pendingLoaded = false; state.listLoaded = false; state.dataError = false; }
+function stopData() { unsubs.forEach(f => f()); unsubs = []; alerts.primed = false; alerts.seen.clear(); state.pending = []; state.list = []; state.inq = []; state.inqLoaded = false; state.inqError = false; state.inqHb = null; state.inqHbLoaded = false; iqAlert.primed = false; iqAlert.seen.clear(); state.hbLoaded = false; state.pendingLoaded = false; state.listLoaded = false; state.dataError = false; }
 const onErr = e => { if (e.code === 'permission-denied' && state.staff) { mountBlocked('권한이 해제되었습니다.'); } else { console.error(e); state.dataError = true; renderChrome(); } };   // 구독이 끊기면 "모두 반영"으로 오인하지 않도록 오류 상태를 화면에 표시
 
 function startData() {
@@ -439,6 +496,7 @@ function startData() {
   unsubs.push(onSnapshot(query(R, orderBy('lastEventAt', 'desc'), limit(150)), s => { state.list = s.docs.map(d => ({ id: d.id, ...d.data() })); state.listLoaded = true; renderChrome(); renderList(); }, onErr));
   unsubs.push(onSnapshot(query(collection(db, 'unparsed'), where('resolved', '==', false)), s => { state.unparsed = s.docs.map(d => ({ id: d.id, ...d.data() })); renderChrome(); if (state.tab === 'unp') renderPane(); }, onErr));
   unsubs.push(onSnapshot(doc(db, 'config', 'heartbeat'), s => { state.heartbeat = s.exists() ? s.data() : null; state.hbLoaded = true; renderChrome(); }, onErr));
+  startInquiries();
   if (state.staff.role === 'admin') unsubs.push(onSnapshot(collection(db, 'staff'), s => { state.staffList = s.docs.map(d => ({ id: d.id, ...d.data() })); if (state.tab === 'acc') renderPane(); }, onErr));
 }
 
@@ -505,6 +563,7 @@ setInterval(() => {
   const stale = state.pending.filter(d => Date.now() - ms(d.lastEventAt) > REPEAT_AFTER_MIN * 60000);
   if (stale.length && Date.now() - alerts.lastUrgent > 60000) { alerts.lastUrgent = Date.now(); chime('urgent'); }
   renderChrome(); if (!document.hidden) renderList();
+  if (state.tab === 'inq' && !document.hidden) iqTick();
 }, 20000);
 let flash = false;
 setInterval(() => {
@@ -619,14 +678,15 @@ function renderChrome() {
   if (state.audioBlocked) b.push(`<div class="banner b-warn">${I.bellOff}<div class="grow"><b>브라우저가 소리를 막았습니다.</b> 화면을 한 번 누르면 알림음이 켜집니다.</div></div>`);
   const stale = state.pending.filter(d => Date.now() - ms(d.lastEventAt) > REPEAT_AFTER_MIN * 60000);
   if (stale.length) b.push(`<div class="banner b-bad" role="alert">${I.alert}<div class="grow"><b>${REPEAT_AFTER_MIN}분 넘게 PMS 미반영 ${stale.length}건</b> — 가장 오래된 건이 ${ago(Math.min(...stale.map(d => ms(d.lastEventAt))))} 도착했습니다.</div></div>`);
+  b.push(...iqBanners());
   $('#banners').innerHTML = b.join('');
 
   const heroNow = heroHtml(hb);
   if (heroNow !== heroCache) { heroCache = heroNow; $('#hero').innerHTML = heroNow; }   // 내용이 같으면 다시 그리지 않음(스크린리더 반복 낭독 방지)
 
   const admin = state.staff.role === 'admin';
-  const tabs = [['rsv', '예약', I.list], ['stat', '통계', I.chart], ['unp', '미파싱', I.mail], ...(admin ? [['acc', '계정', I.people]] : [])];
-  $('#tabs').innerHTML = tabs.map(([k, l, ic]) => `<button role="tab" data-act="tab" data-tab="${k}" aria-selected="${state.tab === k}">${ic}<span>${l}</span>${k === 'unp' && state.unparsed.length ? `<span class="badge">${state.unparsed.length}</span>` : ''}</button>`).join('');
+  const tabs = [['rsv', '예약', I.list], ['inq', '문의', I.chat], ['stat', '통계', I.chart], ['unp', '미파싱', I.mail], ...(admin ? [['acc', '계정', I.people]] : [])];
+  $('#tabs').innerHTML = tabs.map(([k, l, ic]) => `<button role="tab" data-act="tab" data-tab="${k}" aria-selected="${state.tab === k}">${ic}<span>${l}</span>${k === 'unp' && state.unparsed.length ? `<span class="badge">${state.unparsed.length}</span>` : ''}${k === 'inq' && iqOpen().length ? `<span class="badge${iqOpen().some(d => d.urgent) ? '' : ' soft'}" aria-label="미답변 문의 ${iqOpen().length}건">${iqOpen().length}</span>` : ''}</button>`).join('');
 }
 
 function channels() { return [...new Set([...state.list, ...state.pending].map(r => r.channel).filter(Boolean))].sort(); }
@@ -642,6 +702,7 @@ function renderPane() {
     $('#fq').oninput = e => { f.q = e.target.value; renderList(); };
     renderList();
   } else if (state.tab === 'stat') renderStat();
+  else if (state.tab === 'inq') renderInq();
   else if (state.tab === 'unp') renderUnparsed();
   else if (state.tab === 'acc') renderAccounts();
 }
@@ -795,6 +856,142 @@ function downloadCsv() {
 }
 
 /* ───────── 미파싱 / 계정 ───────── */
+/* ───────── 문의(OTA 고객 메시지) ─────────
+   수집: 별도 Apps Script(rsv-inquiry-collector) → Firestore inquiries/<스레드> / config/inqHeartbeat
+   이 화면은 읽기 + "답변 완료" 표시(status 계열 필드)만 쓴다. 답변 자체는 각 OTA 관리자 화면에서 한다. */
+const IQ_WARN_MIN = 30, IQ_LATE_MIN = 120;      // 대기 게이지 기준(분). 운영 기준이 정해지면 이 두 값만 바꾼다.
+const IQ_STALE_MIN = 20;                         // 수집기가 이 시간 넘게 조용하면 경고(수집 주기 5분의 4배)
+const IQ_CAT = { URGENT: '긴급 확인', CANCEL: '취소·환불', STAY: '체크인·아웃', FACILITY: '시설·편의', GENERAL: '일반' };
+const IQ_CH = { trip: 'Trip.com', booking: 'Booking.com', expedia: 'Expedia', agoda: 'Agoda' };
+const IQ_MK = { trip: 'T', booking: 'B', expedia: 'E', agoda: 'A' };
+const IQ_HOME = { trip: 'https://ebooking.trip.com/', booking: 'https://admin.booking.com/', expedia: 'https://apps.expediapartnercentral.com/lodging/conversations/messageCenter.html', agoda: 'https://ycs.agoda.com/' };
+const IQ_HOSTS = { trip: ['ebooking.trip.com', 'ebooking.ctrip.com'], booking: ['admin.booking.com'], expedia: ['apps.expediapartnercentral.com'], agoda: ['ycs.agoda.com'] };
+const iqAlert = { primed: false, seen: new Map() };
+
+/** 화면에 링크를 걸기 전 한 번 더 검사(수집기에서도 걸렀지만 DB 값은 신뢰하지 않는다). 통과 못 하면 '' */
+function iqSafe(ch, u) {
+  try {
+    const x = new URL(String(u || ''));
+    if (x.protocol !== 'https:' || x.username || x.password || x.port) return '';
+    return (IQ_HOSTS[ch] || []).includes(x.hostname.toLowerCase()) ? String(u) : '';
+  } catch { return ''; }
+}
+const iqOpen = () => state.inq.filter(d => d.status !== 'answered');
+const IQ_BIZ = [9, 20];                          // 답변 가능 시간대(09~20시). 20시~다음날 09시 사이 접수분은 그 시간을 대기로 세지 않는다
+function iqBizMin(t0, t1) {
+  if (!(t0 > 0) || !(t1 > t0)) return 0;         // 날짜값이 없거나 이상하면 0분(1970년부터 하루씩 세느라 화면이 멈추는 일을 막는다)
+  let tot = 0; const d = new Date(t0); d.setHours(0, 0, 0, 0);
+  while (d.getTime() < t1) {
+    const s = new Date(d); s.setHours(IQ_BIZ[0]); const e = new Date(d); e.setHours(IQ_BIZ[1]);
+    tot += Math.max(0, Math.min(e.getTime(), t1) - Math.max(s.getTime(), t0));
+    d.setDate(d.getDate() + 1);
+  }
+  return Math.floor(tot / 60000);
+}
+const iqWaitMin = d => iqBizMin(ms(d.lastMessageAt), Date.now());
+const iqNight = d => { const h = new Date(ms(d.lastMessageAt)).getHours(); return h < IQ_BIZ[0] || h >= IQ_BIZ[1]; };
+const iqWaitLabel = (d, m) => m < 1 && iqNight(d) ? '야간 접수' : iqWaitTxt(m) + (iqNight(d) ? ' · 야간 접수' : '');
+const iqWaitTxt = m => m < 1 ? '방금 도착' : m < 60 ? `${m}분째 대기` : m < 1440 ? `${Math.floor(m / 60)}시간 ${m % 60 ? (m % 60) + '분' : ''}째 대기`.replace('  ', ' ') : `${Math.floor(m / 1440)}일째 대기`;
+const iqCls = (d, m) => d.status === 'answered' ? 'ok' : m >= IQ_LATE_MIN ? 'late' : m >= IQ_WARN_MIN ? 'warn' : '';
+
+function startInquiries() {
+  const iqErr = e => { console.error(e); state.inqError = true; state.inqLoaded = true; renderChrome(); if (state.tab === 'inq') renderInq(); };   // 권한/네트워크 오류가 나도 예약 화면은 그대로 둔다
+  unsubs.push(onSnapshot(query(collection(db, 'inquiries'), orderBy('lastMessageAt', 'desc'), limit(150)), s => {
+    state.inq = s.docs.map(d => ({ id: d.id, ...d.data() })); state.inqLoaded = true; state.inqError = false;
+    if (!iqAlert.primed) { state.inq.forEach(d => iqAlert.seen.set(d.id, ms(d.lastMessageAt))); iqAlert.primed = true; }
+    else {
+      const fresh = [];
+      s.docChanges().forEach(ch => {
+        if (ch.type === 'removed') return;
+        const d = { id: ch.doc.id, ...ch.doc.data() }, t = ms(d.lastMessageAt);
+        if (d.status === 'answered' || !t || t <= (iqAlert.seen.get(d.id) || 0)) return;
+        iqAlert.seen.set(d.id, t); fresh.push(d);
+      });
+      if (fresh.length) iqFire(fresh);
+    }
+    renderChrome(); if (state.tab === 'inq') renderInq();
+  }, iqErr));
+  unsubs.push(onSnapshot(doc(db, 'config', 'inqHeartbeat'), s => { state.inqHb = s.exists() ? s.data() : null; state.inqHbLoaded = true; renderChrome(); if (state.tab === 'inq') renderInq(); }, e => { console.error(e); state.inqHbLoaded = true; }));
+}
+function iqFire(fresh) {
+  const urgent = fresh.filter(d => d.urgent);
+  if (urgent.length) { chime('urgent'); sweep(); toast(`긴급 확인이 필요한 문의 ${urgent.length}건이 도착했습니다`, 7000); if (navigator.vibrate) navigator.vibrate([200, 100, 200]); }
+  else toast(`새 문의 ${fresh.length}건`, 4500);   // 긴급이 아닌 문의는 소리 없이 알림 배지·토스트만
+}
+function iqBanners() {
+  const b = [], open = iqOpen(), urg = open.filter(d => d.urgent), hb = state.inqHb;
+  if (urg.length) b.push(`<div class="banner b-bad" role="alert">${I.alert}<div class="grow"><b>긴급 확인 문의 ${urg.length}건</b> — 체크인·시설 문제로 보이는 문의입니다. 내용을 직접 확인해 주세요.</div><button data-act="tab" data-tab="inq">보기</button></div>`);
+  if (hb && ms(hb.lastOkAt) && Date.now() - ms(hb.lastOkAt) > IQ_STALE_MIN * 60000) b.push(`<div class="banner b-warn" role="alert">${I.alert}<div class="grow"><b>문의 수집이 ${IQ_STALE_MIN}분 넘게 멈춰 있습니다.</b> 새 문의가 보이지 않을 수 있으니 각 OTA 관리자 화면에서 직접 확인해 주세요.</div></div>`);
+  const bad = hb && Array.isArray(hb.recentUnparsed) ? hb.recentUnparsed.filter(x => Date.now() - ms(x.at) < 86400000) : [];
+  if (bad.length) b.push(`<div class="banner b-warn">${I.alert}<div class="grow">읽지 못한 문의 메일이 <b>${bad.length}건</b> 있습니다. Gmail에서 직접 확인해 주세요.</div></div>`);
+  return b;
+}
+
+function iqCard(d, rise) {
+  const m = iqWaitMin(d), cls = iqCls(d, m), done = d.status === 'answered', full = state.inqFull.has(d.id);
+  const link = iqSafe(d.channel, d.replyUrl), home = iqSafe(d.channel, d.homeUrl) || IQ_HOME[d.channel] || '';
+  const tag = d.urgent && !done ? `<span class="tag t-urgent">${IQ_CAT.URGENT}</span>` : `<span class="tag t-cat">${esc(IQ_CAT[d.category] || IQ_CAT.GENERAL)}</span>`;
+  const sub = [d.roomType && esc(d.roomType), d.brand && d.brand !== d.channelLabel && esc(d.brand), d.checkIn && `${fmtD(d.checkIn)}${d.checkOut ? ' → ' + fmtD(d.checkOut) : ''}`].filter(Boolean).map(x => `<span>${x}</span>`).join('');
+  const long = String(d.text || '').length > 110 || String(d.text || '').includes('\n');
+  const reply = link ? `<a class="btn-p" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${I.ext}채널에서 답변하기</a>` : `<a class="btn-p" href="${esc(home)}" target="_blank" rel="noopener noreferrer">${I.ext}${esc(IQ_CH[d.channel] || '채널')} 메시지함 열기</a>`;
+  const mail = d.gmailUrl && /^https:\/\/mail\.google\.com\//.test(d.gmailUrl) ? `<a class="btn-s" href="${esc(d.gmailUrl)}" target="_blank" rel="noopener noreferrer">메일 원문</a>` : '';
+  const doneBtn = done
+    ? `<button class="iq-done${state.busy.has('iq:' + d.id) ? ' busy' : ''}" data-act="iqdone" data-id="${esc(d.id)}" data-v="0" aria-label="다시 열기">다시 열기</button>`
+    : `<button class="iq-done${state.busy.has('iq:' + d.id) ? ' busy' : ''}" data-act="iqdone" data-id="${esc(d.id)}" data-v="1">${I.check}답변 완료</button>`;
+  return `<article class="iq ${cls}${rise ? ' rise' : ''}${full ? ' full' : ''}" data-id="${esc(d.id)}" style="--fill:${done ? 1 : Math.min(1, m / IQ_LATE_MIN).toFixed(3)}">
+    <span class="gauge" aria-hidden="true"><i></i></span>
+    <div class="iq-l1"><span class="iq-mk" aria-hidden="true">${IQ_MK[d.channel] || '?'}</span><span class="ch">${esc(d.channelLabel || IQ_CH[d.channel] || '')}</span>${tag}
+      <span class="iq-wait" data-w>${done ? `<span class="iq-by">${esc(d.answeredByName || '')} · ${d.answeredBy === 'system' ? '초기이관' : fmtT(ms(d.answeredAt)) + ' 완료'}</span>` : iqWaitLabel(d, m)}</span></div>
+    <div class="iq-l2"><b>${esc(d.guestName || '(고객명 없음)')}</b>${d.resNo ? `<span class="mono">${esc(d.resNo)}</span>` : ''}${sub}</div>
+    <p class="iq-msg">${esc(d.text || d.preview || '')}</p>${long ? `<button class="iq-more" data-act="iqfull" data-id="${esc(d.id)}" aria-expanded="${full}">${full ? '접기' : '전체 보기'}</button>` : ''}
+    <div class="iq-act">${reply}${mail}${doneBtn}</div></article>`;
+}
+
+function renderInq() {
+  const p = $('#pane'); if (!p || state.tab !== 'inq') return;
+  const f = state.inqFilter, openN = iqOpen().length;
+  const go = Object.keys(IQ_CH).map(k => `<a href="${esc(IQ_HOME[k])}" target="_blank" rel="noopener noreferrer"><span class="iq-mk" aria-hidden="true">${IQ_MK[k]}</span>${IQ_CH[k]}${I.ext}</a>`).join('');
+  let rows = state.inq.filter(d => (f.scope === 'all' || d.status !== 'answered') && (!f.channel || d.channel === f.channel));
+  rows = f.scope === 'open'
+    ? rows.sort((a, b) => (b.urgent === true) - (a.urgent === true) || ms(a.lastMessageAt) - ms(b.lastMessageAt))   // 긴급 먼저, 그다음 오래 기다린 순
+    : rows.sort((a, b) => ms(b.lastMessageAt) - ms(a.lastMessageAt));
+  let body;
+  if (state.inqError) body = `<div class="empty"><b>문의 목록을 불러오지 못했습니다</b>잠시 후 다시 열어 보시고, 계속 안 되면 점장에게 알려 주세요.<br>그동안은 위의 채널 바로가기로 메시지함을 직접 확인해 주세요.</div>`;
+  else if (!state.inqLoaded) body = '<div class="list"><div class="iq-sk"></div><div class="iq-sk"></div><div class="iq-sk"></div></div>';
+  else if (!rows.length) body = (state.inqHbLoaded && !state.inqHb && !state.inq.length)
+    ? `<div class="empty"><b>문의 수집이 아직 켜지지 않았습니다</b>켜지기 전에는 위의 채널 바로가기로 메시지함을 직접 확인해 주세요.</div>`
+    : `<div class="empty"><b>${f.scope === 'open' ? '답변을 기다리는 문의가 없습니다' : '문의가 없습니다'}</b>새 문의 메일이 도착하면 여기에 바로 나타납니다.</div>`;
+  else body = `<div class="list">${rows.map(d => { const rise = !iqCard.seen.has(d.id); iqCard.seen.add(d.id); return iqCard(d, rise); }).join('')}</div>`;
+  p.innerHTML = `<div class="iq-go" role="group" aria-label="채널 관리자 바로가기">${go}</div>
+    <div class="iq-tools"><div class="seg" role="group" aria-label="보기"><button data-act="iqscope" data-v="open" aria-pressed="${f.scope === 'open'}">미답변${openN ? ` ${openN}` : ''}</button><button data-act="iqscope" data-v="all" aria-pressed="${f.scope === 'all'}">전체</button></div>
+      <div class="iq-chs" role="group" aria-label="채널"><button data-act="iqch" data-v="" aria-pressed="${!f.channel}">모든 채널</button>${Object.keys(IQ_CH).map(k => `<button data-act="iqch" data-v="${k}" aria-pressed="${f.channel === k}">${IQ_CH[k]}</button>`).join('')}</div></div>
+    ${body}<p class="iq-note"><b>이 탭이 보여주는 범위:</b> Trip.com · Booking.com · Expedia(호텔스닷컴·트래블로시티 포함) · Agoda의 고객 메시지 메일입니다. 여기어때·야놀자 문의, 그리고 각 OTA의 취소 요청·특별 요청·수수료 면제 안내 같은 시스템 알림 메일은 포함되지 않으므로, "문의 없음"이 곧 "모든 채널에 문의 없음"은 아닙니다.<br>대기 시간은 답변 가능 시간(09~20시)만 셉니다. 분류 표시(긴급·취소 등)는 문구 속 단어로 자동 판단한 참고용입니다. 영어·한국어·중국어·일본어 외 언어는 '일반'으로 보일 수 있습니다. 답변 링크는 OTA가 발급한 임시 주소라 시간이 지나면 열리지 않을 수 있으니, 그땐 위의 채널 바로가기에서 메시지함을 열어 주세요.</p>`;
+}
+iqCard.seen = new Set();
+
+/** 20초마다: 카드를 다시 만들지 않고 게이지·대기 시간만 갱신(버튼 포커스·스크롤 유지) */
+function iqTick() {
+  document.querySelectorAll('#pane article.iq[data-id]').forEach(el => {
+    const d = state.inq.find(x => x.id === el.dataset.id); if (!d || d.status === 'answered') return;
+    const m = iqWaitMin(d), c = iqCls(d, m);
+    el.classList.remove('warn', 'late'); if (c) el.classList.add(c);
+    el.style.setProperty('--fill', Math.min(1, m / IQ_LATE_MIN).toFixed(3));
+    const w = el.querySelector('[data-w]'); if (w) w.textContent = iqWaitLabel(d, m);
+  });
+}
+
+async function iqSetDone(id, done) {
+  const key = 'iq:' + id; if (state.busy.has(key)) return;
+  state.busy.add(key); renderInq();
+  try {
+    await updateDoc(doc(db, 'inquiries', id), done
+      ? { status: 'answered', answeredBy: state.staff.uid, answeredByName: state.staff.name, answeredAt: serverTimestamp() }
+      : { status: 'open', answeredBy: '', answeredByName: '', answeredAt: null, reopenedAt: serverTimestamp() });
+    toast(done ? '답변 완료로 표시했습니다.' : '다시 열었습니다.');
+  } catch (e) { console.error(e); toast('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); }
+  finally { state.busy.delete(key); renderInq(); }
+}
+
 function renderUnparsed() {
   const u = [...state.unparsed].sort((a, b) => ms(b.receivedAt) - ms(a.receivedAt));
   $('#pane').innerHTML = u.length ? `<div class="list">${u.map(x => `<article class="card" style="margin:0"><div class="l1"><span class="tag t-cancel">읽지 못함</span><span class="age">${fmtT(ms(x.receivedAt))}</span></div>
@@ -850,6 +1047,10 @@ document.addEventListener('click', async e => {
   else if (a === 'statload') loadStat();
   else if (a === 'trend') loadTrend();
   else if (a === 'csv') downloadCsv();
+  else if (a === 'iqdone') iqSetDone(d.id, d.v === '1');
+  else if (a === 'iqscope') { state.inqFilter.scope = d.v; renderInq(); }
+  else if (a === 'iqch') { state.inqFilter.channel = d.v; renderInq(); }
+  else if (a === 'iqfull') { state.inqFull.has(d.id) ? state.inqFull.delete(d.id) : state.inqFull.add(d.id); renderInq(); }
   else if (a === 'resolve') { try { await updateDoc(doc(db, 'unparsed', d.id), { resolved: true, resolvedByName: state.staff.name, resolvedAt: serverTimestamp() }); toast('처리 완료로 표시했습니다.'); } catch { toast('저장하지 못했습니다.'); } }
   else if (a === 'active') { try { await updateDoc(doc(db, 'staff', d.id), { active: d.v === '1' }); toast(d.v === '1' ? '계정을 다시 사용합니다.' : '계정을 중지했습니다.'); } catch { toast('저장하지 못했습니다.'); } }
 });
