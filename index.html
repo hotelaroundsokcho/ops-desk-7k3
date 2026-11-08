@@ -71,6 +71,8 @@ button{cursor:pointer}
 .chip svg{width:17px;height:17px;flex:none}
 .chip .lbl{display:none}
 .chip.lo{display:none}
+a.chip{color:inherit;text-decoration:none}
+.chip.hk{display:none}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--glass);flex:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--glass) 22%,transparent)}
 .chip.bad{background:var(--rust-t);color:var(--rust-ink)} .chip.bad .dot{background:var(--rust);box-shadow:0 0 0 3px color-mix(in srgb,var(--rust) 24%,transparent)}
 .chip.warn{background:var(--amber-t);color:var(--amber-ink)} .chip.warn .dot{background:var(--amber)}
@@ -134,6 +136,8 @@ body.ping .lens::after{animation:beam 2.1s cubic-bezier(.4,0,.2,1) 1}
   .chip{max-width:none;width:100%;min-height:44px;border-radius:14px}
   .chip .lbl{display:inline}
   .chip.lo{display:inline-flex}
+  .chip.hk{display:inline-flex}
+  .menu a.hk-m{display:none}
   .chip.lo:not(.bad){color:var(--ink2)}
   .main{padding:34px 36px 80px 14px}
   .main>div{max-width:900px}
@@ -281,6 +285,8 @@ tbody tr:nth-child(odd) td{background:var(--surface2)}
 .menu{position:absolute;right:16px;top:calc(100% + 4px);min-width:210px;background:var(--surface);border-radius:18px;box-shadow:var(--sh-m);padding:6px;z-index:30}
 .menu button{display:block;width:100%;min-height:44px;padding:0 14px;border:0;border-radius:12px;background:transparent;text-align:left;font-weight:500}
 .menu button:hover{background:var(--surface2)}
+.menu a{display:flex;align-items:center;width:100%;min-height:44px;padding:0 14px;border-radius:12px;font-weight:500;color:inherit;text-decoration:none;box-sizing:border-box}
+.menu a:hover{background:var(--surface2)}
 @media (min-width:920px){.menu{right:auto;left:0;right:0;top:auto;bottom:calc(100% + 8px)}}
 dialog{border:0;border-radius:26px;padding:26px;width:min(420px,calc(100% - 32px));background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.35)}
 dialog::backdrop{background:rgba(8,20,28,.5);backdrop-filter:blur(4px)}
@@ -431,6 +437,7 @@ const alerts = { primed: false, seen: new Map(), ctx: null, lastUrgent: 0, wake:
 let app, auth, db, unsubs = [];
 let loTimer = 0;
 I.out = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H9"/><path d="M14 8l4 4-4 4M18 12H9.5"/></svg>';
+I.ext = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/></svg>';
 
 if (FIREBASE_CONFIG.apiKey === 'REPLACE') {
   $('#app').innerHTML = `<div class="center"><div class="panel"><h1>설정이 필요합니다</h1><p>index.html 상단의 FIREBASE_CONFIG 를 Firebase 프로젝트 값으로 바꿔 주세요. (README 3번)</p></div></div>`;
@@ -667,9 +674,10 @@ function renderChrome() {
   $('#status').innerHTML = `
     <span class="chip ${hb.ok ? '' : 'bad'}"><i class="dot"></i>${esc(hb.text)}</span>
     <button class="chip ${state.soundOn ? '' : 'bad'}" data-act="sound" aria-pressed="${state.soundOn}" aria-label="${state.soundOn ? '소리 켜짐' : '소리 꺼짐'}">${state.soundOn ? I.bell : I.bellOff}<span class="lbl">${state.soundOn ? '알림음 켜짐' : '알림음 꺼짐'}</span></button>
+    <a class="chip hk" href="https://hotelaroundsokcho.github.io/housekeeping/" target="hk-prod" rel="noopener noreferrer" aria-label="객실정비 앱 열기 (새 탭)">${I.ext}<span class="lbl">객실정비 열기</span></a>
     <button class="chip" data-act="menu" aria-haspopup="true" aria-expanded="${state.menu}" aria-label="내 계정 메뉴">${I.user}<span class="lbl">${esc(state.staff.name)} · ${esc(state.staff.title || '')}</span></button>
     <button class="chip lo${state.loAsk ? ' bad' : ''}" data-act="lo" aria-label="${state.loAsk ? '한 번 더 누르면 로그아웃됩니다' : '로그아웃'}">${I.out}<span class="lbl">${state.loAsk ? '한 번 더 누르면 로그아웃' : '로그아웃'}</span></button>
-    ${state.menu ? `<div class="menu" role="menu"><button data-act="test" role="menuitem">알림음 테스트</button><button data-act="pw" role="menuitem">비밀번호 변경</button><button data-act="logout" role="menuitem">로그아웃</button></div>` : ''}`;
+    ${state.menu ? `<div class="menu" role="menu"><a class="hk-m" role="menuitem" href="https://hotelaroundsokcho.github.io/housekeeping/" target="hk-prod" rel="noopener noreferrer">객실정비 열기 (새 탭)</a><button data-act="test" role="menuitem">알림음 테스트</button><button data-act="pw" role="menuitem">비밀번호 변경</button><button data-act="logout" role="menuitem">로그아웃</button></div>` : ''}`;
 
   const b = [];
   if (!hb.ok) b.push(`<div class="banner b-bad" role="alert">${I.alert}<div class="grow">${esc(hb.long)}</div></div>`);
