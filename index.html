@@ -370,8 +370,9 @@ dialog::backdrop{background:rgba(8,20,28,.5);backdrop-filter:blur(4px)}
 @keyframes iq-sh{to{background-position:-300% 0}}
 .tabs .badge.soft{background:var(--sea);color:var(--on-sea)}
 @media (max-width:640px){
-  .iq-go{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:10px}
-  .iq-go a{min-width:0;justify-content:flex-start;gap:7px;min-height:42px;padding:0 10px 0 6px;font-size:13px;white-space:nowrap}
+  .iq-go{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin:0 -16px 10px 0;padding-right:16px}
+  .iq-go::-webkit-scrollbar{display:none}
+  .iq-go a{flex:none;justify-content:flex-start;gap:7px;min-height:42px;padding:0 12px 0 6px;font-size:13px;white-space:nowrap}
   .iq-go a .iq-mk{width:24px;height:24px;font-size:12px;flex:none} .iq-go a svg{display:none}
   .iq-tools{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-16px;padding-right:16px}
   .iq-tools::-webkit-scrollbar{display:none}
@@ -702,7 +703,7 @@ function renderPane() {
   const p = $('#pane'); if (!p) return;
   if (state.tab === 'rsv') {
     const f = state.filter;
-    p.innerHTML = `<div class="tools">
+    p.innerHTML = `${goLinksHtml()}<div class="tools">
       <div class="seg" role="group" aria-label="보기"><button data-act="scope" data-v="pending" aria-pressed="${f.scope === 'pending'}">미반영</button><button data-act="scope" data-v="all" aria-pressed="${f.scope === 'all'}">전체</button></div>
       <select class="field" id="fch" aria-label="채널"><option value="">모든 채널</option>${channels().map(c => `<option ${f.channel === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
       <div class="search grow"><span class="ico" aria-hidden="true">${I.search}</span><input class="field" id="fq" type="search" placeholder="접수번호 · 고객명 · 채널예약번호" value="${esc(f.q)}" aria-label="검색"></div></div><div class="list" id="listBox"></div>`;
@@ -873,6 +874,17 @@ const IQ_CAT = { URGENT: '긴급 확인', CANCEL: '취소·환불', STAY: '체�
 const IQ_CH = { trip: 'Trip.com', booking: 'Booking.com', expedia: 'Expedia', agoda: 'Agoda' };
 const IQ_MK = { trip: 'T', booking: 'B', expedia: 'E', agoda: 'A' };
 const IQ_HOME = { trip: 'https://ebooking.trip.com/', booking: 'https://admin.booking.com/', expedia: 'https://apps.expediapartnercentral.com/lodging/conversations/messageCenter.html', agoda: 'https://ycs.agoda.com/' };
+/* 채널 관리자 바로가기(문의·예약 탭 공용). 문의 수집 채널(IQ_CH)과 별개 — 여기 추가해도 문의 필터 칩은 늘지 않는다. */
+const GO_LINKS = [
+  ['T', 'Trip.com', 'https://ebooking.trip.com/'],
+  ['B', 'Booking.com', 'https://admin.booking.com/'],
+  ['E', 'Expedia', 'https://apps.expediapartnercentral.com/lodging/conversations/messageCenter.html'],
+  ['A', 'Agoda', 'https://ycs.agoda.com/'],
+  ['야', '야놀자', 'https://partner.yanolja.com/'],
+  ['여', '여기어때', 'https://partner.goodchoice.kr/'],
+  ['H', '호텔스토리', 'https://www.hotelstory.com/']
+];
+const goLinksHtml = () => `<div class="iq-go" role="group" aria-label="채널 관리자 바로가기">${GO_LINKS.map(([m, l, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(l)} 관리자 화면 새 탭으로 열기"><span class="iq-mk" aria-hidden="true">${esc(m)}</span>${esc(l)}${I.ext}</a>`).join('')}</div>`;
 const IQ_HOSTS = { trip: ['ebooking.trip.com', 'ebooking.ctrip.com'], booking: ['admin.booking.com'], expedia: ['apps.expediapartnercentral.com'], agoda: ['ycs.agoda.com'] };
 const iqAlert = { primed: false, seen: new Map() };
 
@@ -958,7 +970,6 @@ function iqCard(d, rise) {
 function renderInq() {
   const p = $('#pane'); if (!p || state.tab !== 'inq') return;
   const f = state.inqFilter, openN = iqOpen().length;
-  const go = Object.keys(IQ_CH).map(k => `<a href="${esc(IQ_HOME[k])}" target="_blank" rel="noopener noreferrer"><span class="iq-mk" aria-hidden="true">${IQ_MK[k]}</span>${IQ_CH[k]}${I.ext}</a>`).join('');
   let rows = state.inq.filter(d => (f.scope === 'all' || d.status !== 'answered') && (!f.channel || d.channel === f.channel));
   rows = f.scope === 'open'
     ? rows.sort((a, b) => (b.urgent === true) - (a.urgent === true) || ms(a.lastMessageAt) - ms(b.lastMessageAt))   // 긴급 먼저, 그다음 오래 기다린 순
@@ -970,7 +981,7 @@ function renderInq() {
     ? `<div class="empty"><b>문의 수집이 아직 켜지지 않았습니다</b>켜지기 전에는 위의 채널 바로가기로 메시지함을 직접 확인해 주세요.</div>`
     : `<div class="empty"><b>${f.scope === 'open' ? '답변을 기다리는 문의가 없습니다' : '문의가 없습니다'}</b>새 문의 메일이 도착하면 여기에 바로 나타납니다.</div>`;
   else body = `<div class="list">${rows.map(d => { const rise = !iqCard.seen.has(d.id); iqCard.seen.add(d.id); return iqCard(d, rise); }).join('')}</div>`;
-  p.innerHTML = `<div class="iq-go" role="group" aria-label="채널 관리자 바로가기">${go}</div>
+  p.innerHTML = `${goLinksHtml()}
     <div class="iq-tools"><div class="seg" role="group" aria-label="보기"><button data-act="iqscope" data-v="open" aria-pressed="${f.scope === 'open'}">미답변${openN ? ` ${openN}` : ''}</button><button data-act="iqscope" data-v="all" aria-pressed="${f.scope === 'all'}">전체</button></div>
       <div class="iq-chs" role="group" aria-label="채널"><button data-act="iqch" data-v="" aria-pressed="${!f.channel}">모든 채널</button>${Object.keys(IQ_CH).map(k => `<button data-act="iqch" data-v="${k}" aria-pressed="${f.channel === k}">${IQ_CH[k]}</button>`).join('')}</div></div>
     ${body}<p class="iq-note"><b>이 탭이 보여주는 범위:</b> Trip.com · Booking.com · Expedia(호텔스닷컴·트래블로시티 포함) · Agoda의 고객 메시지 메일입니다. 여기어때·야놀자 문의, 그리고 각 OTA의 취소 요청·특별 요청·수수료 면제 안내 같은 시스템 알림 메일은 포함되지 않으므로, "문의 없음"이 곧 "모든 채널에 문의 없음"은 아닙니다.<br>대기 시간은 답변 가능 시간(09~20시)만 셉니다. 분류 표시(긴급·취소 등)는 문구 속 단어로 자동 판단한 참고용입니다. 영어·한국어·중국어·일본어 외 언어는 '일반'으로 보일 수 있습니다. 답변 링크는 OTA가 발급한 임시 주소라 시간이 지나면 열리지 않을 수 있으니, 그땐 위의 채널 바로가기에서 메시지함을 열어 주세요.</p>`;
