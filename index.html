@@ -328,10 +328,13 @@ dialog::backdrop{background:rgba(8,20,28,.5);backdrop-filter:blur(4px)}
 /* ═══════════ 문의 탭 — 수위 게이지 ═══════════
    한 장의 카드 왼쪽에 가는 수위 막대가 있다. 답을 기다린 시간만큼 아래에서 위로 차오르고
    청록(방금) → 호박(30분↑) → 녹슨 닻(120분↑)으로 바뀐다. 답변 완료되면 해초색으로 가득 찬 채 멈춘다. */
-.iq-go{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
-.iq-go a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 8px;border-radius:999px;background:var(--surface);box-shadow:var(--sh-s);color:var(--ink);text-decoration:none;font-weight:650;font-size:14px}
+.iq-go{display:flex;flex-wrap:nowrap;gap:5px;margin:0 0 8px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px}
+.iq-go::-webkit-scrollbar{display:none}
+.iq-go a{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px 0 5px;border-radius:999px;background:var(--surface);box-shadow:var(--sh-s);color:var(--ink);text-decoration:none;font-weight:650;font-size:13px;white-space:nowrap;transition:background .15s}
 .iq-go a:hover{background:var(--surface2)}
-.iq-go a svg{width:15px;height:15px;color:var(--ink3)}
+.iq-go a:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+.iq-go a svg{display:none}
+.iq-go a .iq-mk{width:22px;height:22px;font-size:11px;flex:none}
 .iq-mk{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sea-t);color:var(--sea-d);font:700 13px/1 var(--disp);letter-spacing:0}
 .iq-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
 .iq-chs{display:flex;gap:6px;flex-wrap:wrap}
@@ -370,10 +373,8 @@ dialog::backdrop{background:rgba(8,20,28,.5);backdrop-filter:blur(4px)}
 @keyframes iq-sh{to{background-position:-300% 0}}
 .tabs .badge.soft{background:var(--sea);color:var(--on-sea)}
 @media (max-width:640px){
-  .iq-go{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin:0 -16px 10px 0;padding-right:16px}
-  .iq-go::-webkit-scrollbar{display:none}
-  .iq-go a{flex:none;justify-content:flex-start;gap:7px;min-height:42px;padding:0 12px 0 6px;font-size:13px;white-space:nowrap}
-  .iq-go a .iq-mk{width:24px;height:24px;font-size:12px;flex:none} .iq-go a svg{display:none}
+  .iq-go{margin:0 -16px 8px 0;padding-right:16px}
+  .iq-go a{flex:none;min-height:42px}
   .iq-tools{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-16px;padding-right:16px}
   .iq-tools::-webkit-scrollbar{display:none}
   .iq-chs{flex-wrap:nowrap} .iq-chs button,.seg{flex:none;white-space:nowrap}
